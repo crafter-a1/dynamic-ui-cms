@@ -1,16 +1,16 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, useNavigation } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 import { format, addMonths } from "date-fns";
-import { enUS, es, fr, de, zh } from 'date-fns/locale';
+import { enUS, es, fr, de } from 'date-fns/locale';
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-const locales = { enUS, es, fr, de, zh };
+const locales = { enUS, es, fr, de };
 type LocaleKey = keyof typeof locales;
 
 function Calendar({
@@ -119,8 +119,8 @@ function CalendarDemo() {
   };
 
   // Custom date cell rendering
-  const customDateRender = (date: Date, selected: boolean) => {
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+  const renderCustomDay = (day: Date, selected: boolean) => {
+    const isWeekend = day.getDay() === 0 || day.getDay() === 6;
     
     return (
       <div className={cn(
@@ -128,12 +128,20 @@ function CalendarDemo() {
         selected && "bg-primary text-primary-foreground font-medium",
         isWeekend && !selected && "text-red-500"
       )}>
-        <time dateTime={format(date, "yyyy-MM-dd")}>
-          {format(date, "d")}
+        <time dateTime={format(day, "yyyy-MM-dd")}>
+          {format(day, "d")}
         </time>
       </div>
     );
   };
+
+  // Fixed handle range selection
+  const handleRangeSelect = (range: { from: Date | undefined; to: Date | undefined }) => {
+    setDateRange(range);
+  };
+
+  // Import navigation from react-day-picker
+  const { useNavigation } = require('react-day-picker');
 
   return (
     <div className="space-y-8">
@@ -269,7 +277,7 @@ function CalendarDemo() {
         <Calendar
           mode="range"
           selected={dateRange}
-          onSelect={setDateRange}
+          onSelect={handleRangeSelect}
           className="border rounded-md"
           numberOfMonths={1}
         />
@@ -338,7 +346,9 @@ function CalendarDemo() {
           selected={selectedDate}
           onSelect={setSelectedDate}
           className="border rounded-md"
-          view="month"
+          captionLayout="dropdown-buttons"
+          fromYear={2020}
+          toYear={2025}
         />
         {selectedDate && (
           <p className="mt-2 text-sm">Selected: {format(selectedDate, "MMMM yyyy")}</p>
@@ -353,7 +363,9 @@ function CalendarDemo() {
           selected={selectedDate}
           onSelect={setSelectedDate}
           className="border rounded-md"
-          view="year"
+          captionLayout="dropdown-buttons"
+          fromYear={2020}
+          toYear={2025}
         />
         {selectedDate && (
           <p className="mt-2 text-sm">Selected: {format(selectedDate, "yyyy")}</p>
@@ -386,9 +398,6 @@ function CalendarDemo() {
           modifiersStyles={{
             weekend: { color: "red" }
           }}
-          renderDay={(date, _modifiers) => 
-            customDateRender(date, selectedDate?.getTime() === date.getTime())
-          }
         />
       </section>
 

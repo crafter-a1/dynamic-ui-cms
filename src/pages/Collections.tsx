@@ -6,9 +6,11 @@ import { CalendarDemo } from '@/components/ui/calendar';
 import { DndContext } from '@dnd-kit/core';
 import ComponentPanel from '@/components/collections/ComponentPanel';
 import CollectionBuilder from '@/components/collections/CollectionBuilder';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const Collections = () => {
   const [activeDropId, setActiveDropId] = React.useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = React.useState<Date>();
 
   const handleDragStart = (event: any) => {
     const { active } = event;
@@ -38,9 +40,17 @@ const Collections = () => {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Component Showcase</h2>
+        <h2 className="text-2xl font-bold mb-4">Date Component</h2>
+        <div className="mb-6">
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Date Picker Component</h3>
+            <DatePicker date={selectedDate} setDate={setSelectedDate} />
+          </Card>
+        </div>
+        
+        <h2 className="text-2xl font-bold mb-4">Calendar Component Showcase</h2>
         <Card className="p-6">
-          <h3 className="text-xl font-semibold mb-4">Calendar Component</h3>
+          <h3 className="text-xl font-semibold mb-4">Full Calendar Demo</h3>
           <CalendarDemo />
         </Card>
       </div>
