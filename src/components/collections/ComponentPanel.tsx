@@ -3,7 +3,7 @@ import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { 
   KeyboardIcon, FileText, Type, List, Check, ToggleLeft, 
-  Image, Link2, Hash, Phone, Mail, Globe, MapPin
+  Image, Link2, Hash, Phone, Mail, Globe, MapPin, Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
