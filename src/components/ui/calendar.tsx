@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, useNavigation } from "react-day-picker";
 import { format, addMonths } from "date-fns";
 import { enUS, es, fr, de } from 'date-fns/locale';
 
@@ -67,6 +67,33 @@ function Calendar({
 }
 Calendar.displayName = "Calendar";
 
+// Custom Footer component for the Calendar
+const Footer = () => {
+  const nav = useNavigation();
+  
+  return (
+    <div className="p-2 border-t border-muted flex justify-between items-center">
+      <button 
+        onClick={() => {
+          const today = new Date();
+          nav.goToMonth(today);
+        }} 
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+      >
+        Today
+      </button>
+      <button 
+        onClick={() => {
+          // Clear functionality would be handled by the parent component
+        }} 
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+      >
+        Clear
+      </button>
+    </div>
+  );
+};
+
 // Full Calendar Demo component with all requested features
 function CalendarDemo() {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
@@ -88,60 +115,10 @@ function CalendarDemo() {
     setTime(e.target.value);
   };
 
-  // Custom date footer with Today and Clear buttons
-  const Footer = () => {
-    const { goToMonth } = useNavigation();
-  
-    return (
-      <div className="p-2 border-t border-muted flex justify-between items-center">
-        <button 
-          onClick={() => {
-            const today = new Date();
-            setSelectedDate(today);
-            goToMonth(today);
-          }} 
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        >
-          Today
-        </button>
-        <button 
-          onClick={() => {
-            setSelectedDate(undefined);
-            setSelectedDates([]);
-            setDateRange({ from: undefined, to: undefined });
-          }} 
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        >
-          Clear
-        </button>
-      </div>
-    );
-  };
-
-  // Custom date cell rendering
-  const renderCustomDay = (day: Date, selected: boolean) => {
-    const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-    
-    return (
-      <div className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-md p-0",
-        selected && "bg-primary text-primary-foreground font-medium",
-        isWeekend && !selected && "text-red-500"
-      )}>
-        <time dateTime={format(day, "yyyy-MM-dd")}>
-          {format(day, "d")}
-        </time>
-      </div>
-    );
-  };
-
   // Fixed handle range selection
   const handleRangeSelect = (range: { from: Date | undefined; to: Date | undefined }) => {
     setDateRange(range);
   };
-
-  // Import navigation from react-day-picker
-  const { useNavigation } = require('react-day-picker');
 
   return (
     <div className="space-y-8">
