@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { 
-  TextInput, FileText, Type, List, Check, ToggleLeft, 
+  KeyboardIcon, FileText, Type, List, Check, ToggleLeft, 
   Image, Link2, Hash, Phone, Mail, Globe, MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -53,7 +53,7 @@ const ComponentPanelItem = ({ id, name, icon, description }: ComponentPanelItemP
 
 const ComponentPanel = () => {
   const inputComponents = [
-    { id: 'text', name: 'Text Input', icon: <TextInput size={20} className="text-cms-primary" />, description: 'Single line text input' },
+    { id: 'text', name: 'Text Input', icon: <KeyboardIcon size={20} className="text-cms-primary" />, description: 'Single line text input' },
     { id: 'textarea', name: 'Text Area', icon: <FileText size={20} className="text-cms-primary" />, description: 'Multi-line text input' },
     { id: 'richText', name: 'Rich Text', icon: <Type size={20} className="text-cms-primary" />, description: 'Formatted text editor' },
     { id: 'number', name: 'Number', icon: <Hash size={20} className="text-cms-primary" />, description: 'Numeric input field' },
