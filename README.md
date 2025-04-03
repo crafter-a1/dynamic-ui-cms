@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/d0a8af92-fe0c-4d12-9458-749dff32ad7b
+**URL**: https://lovable.dev/projects/601d129a-4783-4c3a-98ff-f8341068c826
 
 ## How can I edit this code?
 
@@ -10,7 +10,7 @@ There are several ways of editing your application.
 
 **Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d0a8af92-fe0c-4d12-9458-749dff32ad7b) and start prompting.
+Simply visit the [Lovable Project](https://lovable.dev/projects/601d129a-4783-4c3a-98ff-f8341068c826) and start prompting.
 
 Changes made via Lovable will be committed automatically to this repo.
 
@@ -62,8 +62,12 @@ This project is built with .
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/d0a8af92-fe0c-4d12-9458-749dff32ad7b) and click on Share -> Publish.
+Simply open [Lovable](https://lovable.dev/projects/601d129a-4783-4c3a-98ff-f8341068c826) and click on Share -> Publish.
 
-## I want to use a custom domain - is that possible?
+## Can I connect a custom domain to my Lovable project?
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Yes it is!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
