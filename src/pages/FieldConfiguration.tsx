@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -10,6 +11,7 @@ import { FieldConfigPanel } from '@/components/fields/FieldConfigPanel';
 import { FieldList } from '@/components/fields/FieldList';
 import { FieldValidationPanel } from '@/components/fields/FieldValidationPanel';
 import { FieldLayoutPanel } from '@/components/fields/FieldLayoutPanel';
+import { FieldAdvancedTab } from '@/components/fields/FieldAdvancedTab';
 import { toast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFieldsForCollection, createField } from '@/services/CollectionService';
@@ -106,6 +108,8 @@ export default function FieldConfiguration() {
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('fields');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [configTab, setConfigTab] = useState("general");
+  const [advancedSettings, setAdvancedSettings] = useState<any>({});
   
   // Redirect if no collectionId
   useEffect(() => {
@@ -137,17 +141,20 @@ export default function FieldConfiguration() {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setSelectedFieldType(null);
       setSelectedFieldId(null);
+      setAdvancedSettings({});
     }
   });
 
   const selectFieldType = (typeId: string) => {
     setSelectedFieldType(typeId);
     setSelectedFieldId(null);
+    setConfigTab("general");
   };
 
   const selectField = (fieldId: string) => {
     setSelectedFieldId(fieldId);
     setSelectedFieldType(null);
+    setConfigTab("general");
   };
 
   const handleSaveField = async (fieldData: any) => {
@@ -158,10 +165,11 @@ export default function FieldConfiguration() {
         description: `The field "${fieldData.name}" has been updated.`,
       });
     } else {
-      // Add new field
+      // Add new field with advanced settings
       createFieldMutation.mutate({
         ...fieldData,
-        type: selectedFieldType
+        type: selectedFieldType,
+        advanced: advancedSettings
       });
       
       toast({
@@ -169,6 +177,10 @@ export default function FieldConfiguration() {
         description: `The field "${fieldData.name}" has been created.`,
       });
     }
+  };
+
+  const handleUpdateAdvancedSettings = (settings: any) => {
+    setAdvancedSettings(settings);
   };
 
   const renderTabContent = () => {
@@ -188,6 +200,7 @@ export default function FieldConfiguration() {
                       setSelectedFieldId(null);
                       setSelectedFieldType(null);
                       setActiveTab('fields');
+                      setConfigTab("general");
                     }}
                     className="h-8 gap-1"
                   >
@@ -261,15 +274,50 @@ export default function FieldConfiguration() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <FieldConfigPanel
-                      fieldType={selectedFieldType || (selectedFieldId ? fields.find(f => f.id === selectedFieldId)?.type : null)}
-                      fieldData={selectedFieldId ? fields.find(f => f.id === selectedFieldId) : undefined}
-                      onSave={handleSaveField}
-                      onCancel={() => {
-                        setSelectedFieldId(null);
-                        setSelectedFieldType(null);
-                      }}
-                    />
+                    <Tabs value={configTab} onValueChange={setConfigTab}>
+                      <TabsList className="mb-6 grid grid-cols-4 max-w-lg">
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="validation">Validation</TabsTrigger>
+                        <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                        <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="general">
+                        <FieldConfigPanel
+                          fieldType={selectedFieldType || (selectedFieldId ? fields.find(f => f.id === selectedFieldId)?.type : null)}
+                          fieldData={selectedFieldId ? fields.find(f => f.id === selectedFieldId) : undefined}
+                          onSave={handleSaveField}
+                          onCancel={() => {
+                            setSelectedFieldId(null);
+                            setSelectedFieldType(null);
+                          }}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="validation">
+                        <div className="text-center py-6">
+                          <p className="text-muted-foreground">
+                            Validation settings will be implemented soon.
+                          </p>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="appearance">
+                        <div className="text-center py-6">
+                          <p className="text-muted-foreground">
+                            Appearance settings will be implemented soon.
+                          </p>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="advanced">
+                        <FieldAdvancedTab
+                          fieldType={selectedFieldType || (selectedFieldId ? fields.find(f => f.id === selectedFieldId)?.type : null)}
+                          fieldData={selectedFieldId ? fields.find(f => f.id === selectedFieldId) : undefined}
+                          onUpdate={handleUpdateAdvancedSettings}
+                        />
+                      </TabsContent>
+                    </Tabs>
                   </CardContent>
                 </>
               )}
