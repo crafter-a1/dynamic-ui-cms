@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -18,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { FieldAppearancePanel } from "./FieldAppearancePanel";
+import { FieldAdvancedTab } from "./FieldAdvancedTab";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Info } from "lucide-react";
@@ -125,7 +125,6 @@ const getSchemaForFieldType = (fieldType: string | null) => {
       return booleanFieldSchema;
     case 'select':
       return selectFieldSchema;
-    // Add more field type schemas as needed
     default:
       return baseFieldSchema;
   }
@@ -136,10 +135,18 @@ interface FieldConfigPanelProps {
   fieldData?: any; // Existing field data for editing
   onSave: (fieldData: any) => void;
   onCancel: () => void;
+  onUpdateAdvanced?: (data: any) => void;
 }
 
-export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: FieldConfigPanelProps) {
+export function FieldConfigPanel({ 
+  fieldType, 
+  fieldData, 
+  onSave, 
+  onCancel,
+  onUpdateAdvanced 
+}: FieldConfigPanelProps) {
   const [activeTab, setActiveTab] = useState("general");
+  const [advancedSettings, setAdvancedSettings] = useState<any>({});
   
   // Default values based on field type
   const getDefaultValues = () => {
@@ -239,7 +246,18 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
   });
 
   const handleSubmit = (data: any) => {
-    onSave(data);
+    const mergedData = {
+      ...data,
+      advanced: advancedSettings,
+    };
+    onSave(mergedData);
+  };
+
+  const handleUpdateAdvancedSettings = (settings: any) => {
+    setAdvancedSettings(settings);
+    if (onUpdateAdvanced) {
+      onUpdateAdvanced(settings);
+    }
   };
 
   const renderSpecificSettings = () => {
@@ -701,7 +719,6 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
                       onCheckedChange={(checked) => {
                         field.onChange(checked);
                         if (checked) {
-                          // Disable range selection if multiple selection is enabled
                           form.setValue("settings.allowRangeSelection", false);
                         }
                       }}
@@ -728,7 +745,6 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
                       onCheckedChange={(checked) => {
                         field.onChange(checked);
                         if (checked) {
-                          // Disable multiple selection if range selection is enabled
                           form.setValue("settings.allowMultipleSelection", false);
                         }
                       }}
@@ -797,7 +813,6 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
                       onCheckedChange={(checked) => {
                         field.onChange(checked);
                         if (checked) {
-                          // Disable year picker if month picker is enabled
                           form.setValue("settings.yearPickerOnly", false);
                         }
                       }}
@@ -824,7 +839,6 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
                       onCheckedChange={(checked) => {
                         field.onChange(checked);
                         if (checked) {
-                          // Disable month picker if year picker is enabled
                           form.setValue("settings.monthPickerOnly", false);
                         }
                       }}
@@ -938,8 +952,6 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
           </>
         );
       
-      // Add more field type specific settings as needed
-      
       default:
         return <p className="text-gray-500">No specific settings for this field type</p>;
     }
@@ -1046,7 +1058,6 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
           </>
         );
       case 'date':
-        // Display date-specific appearance settings
         return <FieldAppearancePanel form={form} fieldType={fieldType} />;
       default:
         return <FieldAppearancePanel form={form} fieldType={fieldType} />;
@@ -1138,62 +1149,11 @@ export function FieldConfigPanel({ fieldType, fieldData, onSave, onCancel }: Fie
           </TabsContent>
           
           <TabsContent value="advanced" className="space-y-4">
-            {fieldType === 'number' && (
-              <div className="space-y-4">
-                <Alert variant="info" className="bg-blue-50 border-blue-100 mb-6">
-                  <Info className="h-5 w-5 text-blue-500" />
-                  <AlertDescription className="text-blue-700">
-                    Configure advanced settings for the number field.
-                  </AlertDescription>
-                </Alert>
-              
-                <FormField
-                  control={form.control}
-                  name="ui_options.hidden_in_forms"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                      <div className="space-y-0.5">
-                        <FormLabel>Hide in Forms</FormLabel>
-                        <FormDescription>
-                          Hide this field in content creation forms
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="ui_options.help_text"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Help Text</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter help text..." 
-                          className="resize-none" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Additional guidance text that appears below the field
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-            
-            {fieldType !== 'number' && (
-              <p className="text-gray-500">Advanced settings will be added soon</p>
-            )}
+            <FieldAdvancedTab
+              fieldType={fieldType}
+              fieldData={fieldData}
+              onUpdate={handleUpdateAdvancedSettings}
+            />
           </TabsContent>
         </Tabs>
         
