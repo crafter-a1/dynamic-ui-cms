@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -10,7 +11,6 @@ import { FieldConfigPanel } from '@/components/fields/FieldConfigPanel';
 import { FieldList } from '@/components/fields/FieldList';
 import { FieldValidationPanel } from '@/components/fields/FieldValidationPanel';
 import { FieldLayoutPanel } from '@/components/fields/FieldLayoutPanel';
-import { FieldAdvancedTab } from '@/components/fields/FieldAdvancedTab';
 import { toast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFieldsForCollection, createField } from '@/services/CollectionService';
