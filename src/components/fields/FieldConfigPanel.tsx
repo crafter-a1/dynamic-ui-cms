@@ -16,6 +16,9 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { FieldValidationPanel } from './FieldValidationPanel';
+import { FieldAppearancePanel } from './FieldAppearancePanel';
+import { FieldAdvancedPanel } from './FieldAdvancedPanel';
 
 // Define a dynamic schema based on field type
 const getFieldSchema = (fieldType: string | null) => {
@@ -24,6 +27,14 @@ const getFieldSchema = (fieldType: string | null) => {
     description: z.string().optional(),
     helpText: z.string().optional(),
     required: z.boolean().default(false),
+    ui_options: z.object({
+      placeholder: z.string().optional(),
+      help_text: z.string().optional(),
+      display_mode: z.string().optional(),
+      showCharCount: z.boolean().optional(),
+      width: z.number().optional(),
+      hidden_in_forms: z.boolean().optional(),
+    }).optional().default({}),
   };
 
   switch (fieldType) {
@@ -72,6 +83,14 @@ export function FieldConfigPanel({
       helpText: '',
       required: false,
       defaultValue: undefined,
+      ui_options: {
+        placeholder: '',
+        help_text: '',
+        display_mode: 'default',
+        showCharCount: false,
+        width: 100,
+        hidden_in_forms: false
+      }
     }
   });
 
@@ -85,6 +104,11 @@ export function FieldConfigPanel({
     
     onUpdateAdvanced(advancedSettings);
     onSave(values);
+  };
+
+  const handleUpdateAdvanced = (advancedData: any) => {
+    // Forward advanced settings to parent component
+    onUpdateAdvanced(advancedData);
   };
 
   return (
@@ -167,86 +191,19 @@ export function FieldConfigPanel({
           </TabsContent>
           
           <TabsContent value="validation">
-            {/* Validation specific fields */}
-            <div className="space-y-4">
-              {fieldType === 'text' && (
-                <FormField
-                  control={form.control}
-                  name="keyFilter"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Key Filter</FormLabel>
-                      <FormControl>
-                        <select 
-                          {...field} 
-                          className="w-full p-2 border rounded"
-                        >
-                          <option value="none">No Restriction</option>
-                          <option value="letters">Letters Only</option>
-                          <option value="numbers">Numbers Only</option>
-                          <option value="alphanumeric">Alphanumeric</option>
-                        </select>
-                      </FormControl>
-                      <FormDescription>
-                        Restrict input to specific character types
-                      </FormDescription>
-                    </FormItem>
-                  )}
-                />
-              )}
-            </div>
+            <FieldValidationPanel />
           </TabsContent>
           
           <TabsContent value="appearance">
-            {/* Appearance specific fields */}
-            <div className="space-y-4">
-              {/* Placeholder for appearance settings */}
-              <p className="text-muted-foreground">No appearance settings available for this field type.</p>
-            </div>
+            <FieldAppearancePanel form={form} fieldType={fieldType} />
           </TabsContent>
           
           <TabsContent value="advanced">
-            {/* Advanced settings */}
-            <div className="space-y-4">
-              {fieldType === 'number' && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="min"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Value</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="Minimum allowed value" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="max"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Maximum Value</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="Maximum allowed value" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-            </div>
+            <FieldAdvancedPanel 
+              fieldType={fieldType}
+              initialData={fieldData?.advanced}
+              onSave={handleUpdateAdvanced}
+            />
           </TabsContent>
           
           <div className="flex justify-end space-x-4 mt-6">
@@ -271,4 +228,3 @@ export function FieldConfigPanel({
 }
 
 export default FieldConfigPanel;
-
