@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, GripVertical, AlertCircle, Settings2, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, X, GripVertical, AlertCircle, Settings2, Copy, Check, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import { Component, ComponentField } from "./ComponentsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
