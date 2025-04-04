@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,8 @@ import {
   Trash2, 
   PanelRight, 
   Layers, 
-  FileText 
+  FileText,
+  PackageOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +21,16 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export type Component = {
   id: string;
@@ -46,7 +56,6 @@ type ComponentType = {
   category?: string;
 };
 
-// Define component categories and types
 const componentTypes: Record<string, ComponentType[]> = {
   "Input": [
     { id: "text", name: "Input Text", description: "Basic text input field" },
@@ -124,8 +133,21 @@ export function ComponentsPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [editingComponent, setEditingComponent] = useState<Component | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [componentToDelete, setComponentToDelete] = useState<string | null>(null);
   
-  // Filter components based on search and category
+  useEffect(() => {
+    const savedComponents = localStorage.getItem('components');
+    if (savedComponents) {
+      try {
+        setComponents(JSON.parse(savedComponents));
+      } catch (e) {
+        console.error("Error loading components from localStorage:", e);
+        localStorage.removeItem('components'); // Clear invalid data
+      }
+    }
+  }, []);
+  
   const filteredComponents = components.filter(component => {
     const matchesSearch = component.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           component.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -137,7 +159,6 @@ export function ComponentsPanel() {
   
   const handleCreateComponent = (component: Component) => {
     if (editingComponent) {
-      // Update existing component
       setComponents(prevComponents => 
         prevComponents.map(c => c.id === component.id ? component : c)
       );
@@ -146,24 +167,44 @@ export function ComponentsPanel() {
         description: `${component.name} has been updated successfully.`
       });
     } else {
-      // Create new component
       setComponents(prevComponents => [...prevComponents, component]);
       toast({
         title: "Component created",
         description: `${component.name} has been added to your component library.`
       });
     }
+    
+    const updatedComponents = editingComponent 
+      ? components.map(c => c.id === component.id ? component : c)
+      : [...components, component];
+      
+    localStorage.setItem('components', JSON.stringify(updatedComponents));
+    
     setDrawerOpen(false);
     setEditingComponent(null);
   };
 
-  const handleDeleteComponent = (id: string) => {
-    setComponents(prevComponents => prevComponents.filter(c => c.id !== id));
+  const confirmDeleteComponent = (id: string) => {
+    setComponentToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteComponent = () => {
+    if (!componentToDelete) return;
+    
+    const updatedComponents = components.filter(c => c.id !== componentToDelete);
+    setComponents(updatedComponents);
+    
+    localStorage.setItem('components', JSON.stringify(updatedComponents));
+    
     toast({
       title: "Component deleted",
       description: "The component has been removed from your library.",
       variant: "destructive"
     });
+    
+    setDeleteDialogOpen(false);
+    setComponentToDelete(null);
   };
   
   const handleEditComponent = (component: Component) => {
@@ -190,15 +231,25 @@ export function ComponentsPanel() {
       </div>
       
       {components.length === 0 ? (
-        <Alert variant="info" className="bg-blue-50 border-blue-100">
-          <Info className="h-5 w-5 text-blue-500" />
-          <AlertDescription className="text-blue-700">
-            No components created yet. Click "Add Component" to create your first reusable component.
-          </AlertDescription>
-        </Alert>
+        <div className="text-center py-12 border border-dashed rounded-lg">
+          <PackageOpen className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+          <h3 className="text-lg font-medium text-gray-700">Your component library is empty</h3>
+          <p className="text-gray-500 mt-2 mb-4 max-w-md mx-auto">
+            Create reusable components that can be used across your collections to speed up content creation.
+          </p>
+          <Button
+            onClick={() => {
+              setEditingComponent(null);
+              setDrawerOpen(true);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" /> Create Your First Component
+          </Button>
+        </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex gap-3 items-center">
+          <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input 
@@ -209,7 +260,7 @@ export function ComponentsPanel() {
               />
             </div>
             <Tabs value={activeCategory} onValueChange={setActiveCategory} className="flex-shrink-0">
-              <TabsList>
+              <TabsList className="bg-slate-50">
                 {categories.map((category) => (
                   <TabsTrigger key={category} value={category} className="capitalize">
                     {category}
@@ -220,8 +271,10 @@ export function ComponentsPanel() {
           </div>
           
           {filteredComponents.length === 0 ? (
-            <div className="text-center py-10 text-gray-500">
-              No components found matching your search.
+            <div className="text-center py-10 text-gray-500 border border-dashed rounded-lg">
+              <Search className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+              <p>No components found matching your search.</p>
+              <p className="text-sm mt-1">Try adjusting your search or category filter.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -273,7 +326,7 @@ export function ComponentsPanel() {
                           variant="ghost" 
                           size="sm" 
                           className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDeleteComponent(component.id)}
+                          onClick={() => confirmDeleteComponent(component.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-1" /> Delete
                         </Button>
@@ -293,6 +346,27 @@ export function ComponentsPanel() {
         onSave={handleCreateComponent}
         initialData={editingComponent}
       />
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this component?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the component
+              and remove it from your library.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteComponent}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
