@@ -2,17 +2,7 @@
 import { CollectionCard } from './CollectionCard';
 import { CollectionListItem } from './CollectionListItem';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-interface Collection {
-  id: string;
-  title: string;
-  icon: string;
-  iconColor: string;
-  fields: number;
-  items?: number;
-  lastUpdated: string;
-  status?: 'published' | 'draft';
-}
+import { Collection } from '@/services/CollectionService';
 
 interface CollectionGridProps {
   collections: Collection[];
@@ -55,10 +45,10 @@ export function CollectionGrid({ collections, viewMode, sortOption, onCreateNew 
               title={collection.title}
               icon={collection.icon}
               iconColor={collection.iconColor}
-              fields={collection.fields}
-              items={collection.items}
-              lastUpdated={collection.lastUpdated}
-              status={collection.status}
+              fields={collection.fields || 0}
+              items={collection.items || 0}
+              lastUpdated={collection.lastUpdated || collection.updated_at}
+              status={(collection.status as "published" | "draft") || "draft"}
             />
           ))}
         </div>
@@ -75,10 +65,10 @@ export function CollectionGrid({ collections, viewMode, sortOption, onCreateNew 
           title={collection.title}
           icon={collection.icon}
           iconColor={collection.iconColor}
-          fields={collection.fields}
-          items={collection.items}
-          lastUpdated={collection.lastUpdated}
-          status={collection.status}
+          fields={collection.fields || 0}
+          items={collection.items || 0}
+          lastUpdated={collection.lastUpdated || collection.updated_at}
+          status={(collection.status as "published" | "draft") || "draft"}
         />
       ))}
       

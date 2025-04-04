@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,7 +75,8 @@ export function NewCollectionForm({ onCollectionCreated, onClose }: NewCollectio
     },
   });
 
-  const { fields, append, remove } = form.useFieldArray({
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
     name: "fields",
   });
 
@@ -84,22 +84,18 @@ export function NewCollectionForm({ onCollectionCreated, onClose }: NewCollectio
     setIsSubmitting(true);
     
     try {
-      // Use the adapter to ensure compatibility with the service
       const adaptedData = adaptCollectionFormData(values);
       onCollectionCreated(adaptedData);
     } catch (error) {
       console.error("Failed to create collection:", error);
-      // Reset submitting state in case of error
       setIsSubmitting(false);
     }
   }
 
-  // Auto-generate API ID from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     form.setValue("name", name);
     
-    // Only auto-generate if user hasn't manually edited the API ID or if it's empty
     if (!form.getValues("apiId")) {
       const apiId = name
         .toLowerCase()
@@ -133,7 +129,6 @@ export function NewCollectionForm({ onCollectionCreated, onClose }: NewCollectio
   const handleFieldNameChange = (index: number, value: string) => {
     form.setValue(`fields.${index}.name`, value);
     
-    // Auto-generate API ID from name
     if (!form.getValues(`fields.${index}.apiId`)) {
       const apiId = value
         .toLowerCase()
@@ -143,7 +138,6 @@ export function NewCollectionForm({ onCollectionCreated, onClose }: NewCollectio
     }
   };
 
-  // Create a list of available locales for the dropdown
   const availableLocales = [
     { label: 'English (US)', value: 'en-US' },
     { label: 'English (UK)', value: 'en-GB' },
@@ -154,7 +148,6 @@ export function NewCollectionForm({ onCollectionCreated, onClose }: NewCollectio
     { label: 'Chinese', value: 'zh-CN' },
   ];
 
-  // Create a list of common currencies for the dropdown
   const availableCurrencies = [
     { label: 'US Dollar ($)', value: 'USD' },
     { label: 'Euro (€)', value: 'EUR' },
@@ -405,7 +398,6 @@ export function NewCollectionForm({ onCollectionCreated, onClose }: NewCollectio
                           />
                         </div>
                         
-                        {/* Advanced settings based on field type */}
                         {form.watch(`fields.${index}.type`) === 'number' && (
                           <div className="border rounded-md p-4 space-y-4 mt-2">
                             <h4 className="text-sm font-medium">Number Field Settings</h4>

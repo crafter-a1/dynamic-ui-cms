@@ -58,54 +58,107 @@ export function SelectButtonField({
   const helpTextId = `${id}-help`;
   const errorId = `${id}-error`;
 
-  return (
-    <div className="space-y-2">
-      {label && (
-        <Label
-          htmlFor={id}
-          className={cn(
-            "block",
-            invalid ? "text-red-500" : "",
-            disabled ? "text-gray-400 cursor-not-allowed" : "",
-            required ? "after:content-['*'] after:text-red-500 after:ml-0.5" : ""
-          )}
-        >
-          {label}
-        </Label>
-      )}
-
-      <ToggleGroup 
-        type={multiple ? "multiple" : "single"}
-        value={multiple ? currentValue as string[] : currentValue as string}
-        onValueChange={handleValueChange}
-        className={cn("flex flex-wrap gap-2", className)}
-        disabled={disabled}
-      >
-        {options.map((option) => (
-          <ToggleGroupItem
-            key={option.value}
-            value={option.value}
-            disabled={option.disabled || disabled}
-            className="data-[state=on]:bg-blue-600 data-[state=on]:text-white"
+  // We need to render different ToggleGroup based on the type
+  // to fix the TypeScript error
+  if (multiple) {
+    return (
+      <div className="space-y-2">
+        {label && (
+          <Label
+            htmlFor={id}
+            className={cn(
+              "block",
+              invalid ? "text-red-500" : "",
+              disabled ? "text-gray-400 cursor-not-allowed" : "",
+              required ? "after:content-['*'] after:text-red-500 after:ml-0.5" : ""
+            )}
           >
-            {option.label}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+            {label}
+          </Label>
+        )}
 
-      {helpText && !invalid && (
-        <p id={helpTextId} className="text-xs text-gray-500 mt-1">
-          {helpText}
-        </p>
-      )}
+        <ToggleGroup 
+          type="multiple"
+          value={currentValue as string[]}
+          onValueChange={handleValueChange}
+          className={cn("flex flex-wrap gap-2", className)}
+          disabled={disabled}
+        >
+          {options.map((option) => (
+            <ToggleGroupItem
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled || disabled}
+              className="data-[state=on]:bg-blue-600 data-[state=on]:text-white"
+            >
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
 
-      {invalid && errorMessage && (
-        <p id={errorId} className="text-xs text-red-500 mt-1">
-          {errorMessage}
-        </p>
-      )}
-    </div>
-  );
+        {helpText && !invalid && (
+          <p id={helpTextId} className="text-xs text-gray-500 mt-1">
+            {helpText}
+          </p>
+        )}
+
+        {invalid && errorMessage && (
+          <p id={errorId} className="text-xs text-red-500 mt-1">
+            {errorMessage}
+          </p>
+        )}
+      </div>
+    );
+  } else {
+    return (
+      <div className="space-y-2">
+        {label && (
+          <Label
+            htmlFor={id}
+            className={cn(
+              "block",
+              invalid ? "text-red-500" : "",
+              disabled ? "text-gray-400 cursor-not-allowed" : "",
+              required ? "after:content-['*'] after:text-red-500 after:ml-0.5" : ""
+            )}
+          >
+            {label}
+          </Label>
+        )}
+
+        <ToggleGroup 
+          type="single"
+          value={currentValue as string}
+          onValueChange={handleValueChange}
+          className={cn("flex flex-wrap gap-2", className)}
+          disabled={disabled}
+        >
+          {options.map((option) => (
+            <ToggleGroupItem
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled || disabled}
+              className="data-[state=on]:bg-blue-600 data-[state=on]:text-white"
+            >
+              {option.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+
+        {helpText && !invalid && (
+          <p id={helpTextId} className="text-xs text-gray-500 mt-1">
+            {helpText}
+          </p>
+        )}
+
+        {invalid && errorMessage && (
+          <p id={errorId} className="text-xs text-red-500 mt-1">
+            {errorMessage}
+          </p>
+        )}
+      </div>
+    );
+  }
 }
 
 export default SelectButtonField;

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { format, isValid, parse, isWithinInterval } from "date-fns";
 import { Calendar as CalendarIcon, ChevronDown } from "lucide-react";
@@ -13,7 +12,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
-interface DateCalendarFieldProps {
+export interface DateCalendarFieldProps {
   value: Date | null;
   onChange: (date: Date | null) => void;
   dateFormat?: string;
@@ -38,6 +37,7 @@ interface DateCalendarFieldProps {
   id?: string;
   name?: string;
   className?: string;
+  helpText?: string;
 }
 
 export function DateCalendarField({
@@ -65,12 +65,12 @@ export function DateCalendarField({
   id,
   name,
   className,
+  helpText,
 }: DateCalendarFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState<string>("");
   const [isFocused, setIsFocused] = useState(false);
   
-  // For range selection
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -79,9 +79,8 @@ export function DateCalendarField({
     to: undefined,
   });
   
-  // For multiple selection
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  
+
   useEffect(() => {
     if (value && isValid(value)) {
       setInputValue(format(value, dateFormat));
@@ -102,7 +101,6 @@ export function DateCalendarField({
     const parsedDate = parse(newInputValue, dateFormat, new Date());
     
     if (isValid(parsedDate)) {
-      // Check if date is within min/max range
       const isInRange = isDateInRange(parsedDate);
       if (isInRange) {
         onChange(parsedDate);
@@ -144,8 +142,7 @@ export function DateCalendarField({
       const formattedRange = `${format(range.from, dateFormat)} - ${format(range.to, dateFormat)}`;
       setInputValue(formattedRange);
       
-      // Custom logic for how you want to handle range in your app
-      onChange(range.from); // You might want to handle this differently
+      onChange(range.from);
       
       if (!inlineMode) {
         setIsOpen(false);
@@ -160,8 +157,7 @@ export function DateCalendarField({
       const formattedDates = dates.map(d => format(d, dateFormat)).join(", ");
       setInputValue(formattedDates);
       
-      // Custom logic for how you want to handle multiple dates in your app
-      onChange(dates[0]); // You might want to handle this differently
+      onChange(dates[0]);
     } else {
       setInputValue("");
       onChange(null);
@@ -192,158 +188,230 @@ export function DateCalendarField({
 
   const renderCalendarContent = () => {
     if (yearPickerOnly) {
-      return (
-        <div className="p-2">
-          <div className="grid grid-cols-3 gap-2">
-            {Array.from({ length: 12 }, (_, i) => {
-              const year = new Date().getFullYear() - 5 + i;
-              return (
-                <Button
-                  key={year}
-                  variant="outline"
-                  className="h-10"
-                  onClick={() => {
-                    const date = new Date();
-                    date.setFullYear(year);
-                    handleCalendarSelect(date);
-                  }}
-                >
-                  {year}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      );
+      return null;
     }
 
     if (monthPickerOnly) {
-      return (
-        <div className="p-2">
-          <div className="grid grid-cols-3 gap-2">
-            {Array.from({ length: 12 }, (_, i) => {
-              const monthNames = Array.from({ length: 12 }, (_, m) =>
-                new Date(0, m).toLocaleString(locale || undefined, { month: 'short' })
-              );
-              return (
-                <Button
-                  key={i}
-                  variant="outline"
-                  className="h-10"
-                  onClick={() => {
-                    const date = new Date();
-                    date.setMonth(i);
-                    handleCalendarSelect(date);
-                  }}
-                >
-                  {monthNames[i]}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      );
+      return null;
     }
 
-    let calendarMode: "single" | "multiple" | "range" = "single";
-    if (allowMultipleSelection) calendarMode = "multiple";
-    if (allowRangeSelection) calendarMode = "range";
-
-    return (
-      <>
-        <div className={showMultipleMonths ? "flex" : ""}>
-          <Calendar
-            mode={calendarMode}
-            selected={
-              allowRangeSelection
-                ? dateRange
-                : allowMultipleSelection
-                ? selectedDates
-                : value
-            }
-            onSelect={
-              allowRangeSelection
-                ? handleRangeSelect as any
-                : allowMultipleSelection
-                ? handleMultipleSelect
-                : handleCalendarSelect
-            }
-            disabled={(date) => {
-              if (minDate && date < minDate) return true;
-              if (maxDate && date > maxDate) return true;
-              return false;
-            }}
-            initialFocus
-            className={cn("p-3 pointer-events-auto")}
-          />
-          
-          {showMultipleMonths && (
+    if (allowRangeSelection) {
+      return (
+        <>
+          <div className={showMultipleMonths ? "flex" : ""}>
             <Calendar
-              mode={calendarMode}
-              selected={
-                allowRangeSelection
-                  ? dateRange
-                  : allowMultipleSelection
-                  ? selectedDates
-                  : value
-              }
-              onSelect={
-                allowRangeSelection
-                  ? handleRangeSelect as any
-                  : allowMultipleSelection
-                  ? handleMultipleSelect
-                  : handleCalendarSelect
-              }
+              mode="range"
+              selected={dateRange}
+              onSelect={handleRangeSelect}
               disabled={(date) => {
                 if (minDate && date < minDate) return true;
                 if (maxDate && date > maxDate) return true;
                 return false;
               }}
-              month={
-                value 
-                  ? new Date(value.getFullYear(), value.getMonth() + 1) 
-                  : new Date(new Date().getFullYear(), new Date().getMonth() + 1)
-              }
+              initialFocus
               className={cn("p-3 pointer-events-auto")}
             />
-          )}
-        </div>
-        
-        {includeTimePicker && (
-          <div className="p-3 border-t">
-            <div className="flex justify-between items-center">
-              <Label htmlFor="time-input">Time</Label>
-              <Input
-                id="time-input"
-                type="time"
-                className="w-32"
-                value={value ? format(value, "HH:mm") : ""}
-                onChange={(e) => {
-                  if (!value) return;
-                  
-                  const [hours, minutes] = e.target.value.split(":");
-                  const newDate = new Date(value);
-                  newDate.setHours(parseInt(hours, 10));
-                  newDate.setMinutes(parseInt(minutes, 10));
-                  onChange(newDate);
+            
+            {showMultipleMonths && (
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={handleRangeSelect}
+                disabled={(date) => {
+                  if (minDate && date < minDate) return true;
+                  if (maxDate && date > maxDate) return true;
+                  return false;
                 }}
+                month={
+                  value 
+                    ? new Date(value.getFullYear(), value.getMonth() + 1) 
+                    : new Date(new Date().getFullYear(), new Date().getMonth() + 1)
+                }
+                className={cn("p-3 pointer-events-auto")}
               />
+            )}
+          </div>
+          
+          {includeTimePicker && value && (
+            <div className="p-3 border-t">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="time-input">Time</Label>
+                <Input
+                  id="time-input"
+                  type="time"
+                  className="w-32"
+                  value={value ? format(value, "HH:mm") : ""}
+                  onChange={(e) => {
+                    if (!value) return;
+                    
+                    const [hours, minutes] = e.target.value.split(":");
+                    const newDate = new Date(value);
+                    newDate.setHours(parseInt(hours, 10));
+                    newDate.setMinutes(parseInt(minutes, 10));
+                    onChange(newDate);
+                  }}
+                />
+              </div>
             </div>
+          )}
+          
+          {showButtonBar && (
+            <div className="p-3 border-t flex justify-between">
+              <Button variant="outline" size="sm" onClick={handleToday}>
+                Today
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleClear}>
+                Clear
+              </Button>
+            </div>
+          )}
+        </>
+      );
+    } else if (allowMultipleSelection) {
+      return (
+        <>
+          <div className={showMultipleMonths ? "flex" : ""}>
+            <Calendar
+              mode="multiple"
+              selected={selectedDates}
+              onSelect={handleMultipleSelect}
+              disabled={(date) => {
+                if (minDate && date < minDate) return true;
+                if (maxDate && date > maxDate) return true;
+                return false;
+              }}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+            
+            {showMultipleMonths && (
+              <Calendar
+                mode="multiple"
+                selected={selectedDates}
+                onSelect={handleMultipleSelect}
+                disabled={(date) => {
+                  if (minDate && date < minDate) return true;
+                  if (maxDate && date > maxDate) return true;
+                  return false;
+                }}
+                month={
+                  value 
+                    ? new Date(value.getFullYear(), value.getMonth() + 1) 
+                    : new Date(new Date().getFullYear(), new Date().getMonth() + 1)
+                }
+                className={cn("p-3 pointer-events-auto")}
+              />
+            )}
           </div>
-        )}
-        
-        {showButtonBar && (
-          <div className="p-3 border-t flex justify-between">
-            <Button variant="outline" size="sm" onClick={handleToday}>
-              Today
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleClear}>
-              Clear
-            </Button>
+          
+          {includeTimePicker && value && (
+            <div className="p-3 border-t">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="time-input">Time</Label>
+                <Input
+                  id="time-input"
+                  type="time"
+                  className="w-32"
+                  value={value ? format(value, "HH:mm") : ""}
+                  onChange={(e) => {
+                    if (!value) return;
+                    
+                    const [hours, minutes] = e.target.value.split(":");
+                    const newDate = new Date(value);
+                    newDate.setHours(parseInt(hours, 10));
+                    newDate.setMinutes(parseInt(minutes, 10));
+                    onChange(newDate);
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          
+          {showButtonBar && (
+            <div className="p-3 border-t flex justify-between">
+              <Button variant="outline" size="sm" onClick={handleToday}>
+                Today
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleClear}>
+                Clear
+              </Button>
+            </div>
+          )}
+        </>
+      );
+    } else {
+      return (
+        <>
+          <div className={showMultipleMonths ? "flex" : ""}>
+            <Calendar
+              mode="single"
+              selected={value}
+              onSelect={handleCalendarSelect}
+              disabled={(date) => {
+                if (minDate && date < minDate) return true;
+                if (maxDate && date > maxDate) return true;
+                return false;
+              }}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+            
+            {showMultipleMonths && (
+              <Calendar
+                mode="single"
+                selected={value}
+                onSelect={handleCalendarSelect}
+                disabled={(date) => {
+                  if (minDate && date < minDate) return true;
+                  if (maxDate && date > maxDate) return true;
+                  return false;
+                }}
+                month={
+                  value 
+                    ? new Date(value.getFullYear(), value.getMonth() + 1) 
+                    : new Date(new Date().getFullYear(), new Date().getMonth() + 1)
+                }
+                className={cn("p-3 pointer-events-auto")}
+              />
+            )}
           </div>
-        )}
-      </>
-    );
+          
+          {includeTimePicker && value && (
+            <div className="p-3 border-t">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="time-input">Time</Label>
+                <Input
+                  id="time-input"
+                  type="time"
+                  className="w-32"
+                  value={value ? format(value, "HH:mm") : ""}
+                  onChange={(e) => {
+                    if (!value) return;
+                    
+                    const [hours, minutes] = e.target.value.split(":");
+                    const newDate = new Date(value);
+                    newDate.setHours(parseInt(hours, 10));
+                    newDate.setMinutes(parseInt(minutes, 10));
+                    onChange(newDate);
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          
+          {showButtonBar && (
+            <div className="p-3 border-t flex justify-between">
+              <Button variant="outline" size="sm" onClick={handleToday}>
+                Today
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleClear}>
+                Clear
+              </Button>
+            </div>
+          )}
+        </>
+      );
+    }
   };
 
   return (
@@ -422,6 +490,12 @@ export function DateCalendarField({
         </div>
       )}
       
+      {helpText && !invalid && (
+        <p className="text-xs text-gray-500 mt-1">
+          {helpText}
+        </p>
+      )}
+      
       {invalid && (
         <p className="text-xs text-red-500 mt-1">
           Please enter a valid date in the format {dateFormat}.
@@ -430,3 +504,7 @@ export function DateCalendarField({
     </div>
   );
 }
+
+export type DateCalendarFieldWithHelpText = DateCalendarFieldProps & {
+  helpText?: string;
+};

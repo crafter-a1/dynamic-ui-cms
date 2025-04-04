@@ -89,178 +89,100 @@ export default function Users() {
       <div className="p-6 md:p-10">
         <h1 className="text-2xl font-bold mb-6">User Management</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New User</CardTitle>
-              <CardDescription>Create a new user account</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputTextField
-                    id="firstName"
-                    name="firstName"
-                    label="First Name"
-                    placeholder="Enter first name"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    invalid={!!errors.firstName}
-                    errorMessage={errors.firstName}
-                    required
-                  />
-                  
-                  <InputTextField
-                    id="lastName"
-                    name="lastName"
-                    label="Last Name"
-                    placeholder="Enter last name"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    invalid={!!errors.lastName}
-                    errorMessage={errors.lastName}
-                    required
-                  />
-                </div>
-                
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New User</CardTitle>
+            <CardDescription>Create a new user account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputTextField
-                  id="email"
-                  name="email"
-                  label="Email Address"
-                  type="email"
-                  placeholder="Enter email address"
-                  value={formData.email}
+                  id="firstName"
+                  name="firstName"
+                  label="First Name"
+                  placeholder="Enter first name"
+                  value={formData.firstName}
                   onChange={handleInputChange}
-                  invalid={!!errors.email}
-                  errorMessage={errors.email}
+                  invalid={!!errors.firstName}
+                  errorMessage={errors.firstName}
                   required
-                  helpText="We'll never share your email with anyone"
                 />
                 
                 <InputTextField
-                  id="phone"
-                  name="phone"
-                  label="Phone Number"
-                  placeholder="Enter phone number"
-                  value={formData.phone}
+                  id="lastName"
+                  name="lastName"
+                  label="Last Name"
+                  placeholder="Enter last name"
+                  value={formData.lastName}
                   onChange={handleInputChange}
-                  keyFilter="numeric"
-                  invalid={!!errors.phone}
-                  errorMessage={errors.phone}
-                  helpText="Format: 1234567890"
-                />
-                
-                <InputTextField
-                  id="username"
-                  name="username"
-                  label="Username"
-                  placeholder="Choose a username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  filled
-                  floatLabel
-                  helpText="Username must be unique"
-                />
-                
-                <InputTextField
-                  id="password"
-                  name="password"
-                  label="Password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  invalid={!!errors.password}
-                  errorMessage={errors.password}
+                  invalid={!!errors.lastName}
+                  errorMessage={errors.lastName}
                   required
-                  helpText="At least 8 characters"
-                />
-                
-                <div className="pt-4">
-                  <Button type="submit" className="w-full md:w-auto">
-                    Create User
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Input Field Examples</CardTitle>
-              <CardDescription>Showcase of various input configurations</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium mb-2">Different Sizes</h3>
-                <div className="space-y-4">
-                  <InputTextField
-                    label="Small Input"
-                    placeholder="Small size"
-                    size="small"
-                  />
-                  <InputTextField
-                    label="Medium Input"
-                    placeholder="Medium size (default)"
-                    size="medium"
-                  />
-                  <InputTextField
-                    label="Large Input"
-                    placeholder="Large size"
-                    size="large"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Key Filter Examples</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputTextField
-                    label="Numbers Only"
-                    placeholder="Try typing letters"
-                    keyFilter="numeric"
-                  />
-                  <InputTextField
-                    label="Letters Only"
-                    placeholder="Try typing numbers"
-                    keyFilter="alpha"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Float Label</h3>
-                <InputTextField
-                  label="Floating Label"
-                  placeholder="Type something"
-                  floatLabel
                 />
               </div>
               
-              <div>
-                <h3 className="text-sm font-medium mb-2">States</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <InputTextField
-                    label="Filled Input"
-                    value="Pre-filled value"
-                    filled
-                  />
-                  <InputTextField
-                    label="Invalid Input"
-                    value="Invalid data"
-                    invalid
-                    errorMessage="This value is incorrect"
-                  />
-                  <InputTextField
-                    label="Disabled Input"
-                    value="Cannot be edited"
-                    disabled
-                  />
-                </div>
+              <InputTextField
+                id="email"
+                name="email"
+                label="Email Address"
+                type="email"
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={handleInputChange}
+                invalid={!!errors.email}
+                errorMessage={errors.email}
+                required
+                helpText="We'll never share your email with anyone"
+              />
+              
+              <InputTextField
+                id="phone"
+                name="phone"
+                label="Phone Number"
+                placeholder="Enter phone number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                keyFilter="numeric"
+                invalid={!!errors.phone}
+                errorMessage={errors.phone}
+                helpText="Format: 1234567890"
+              />
+              
+              <InputTextField
+                id="username"
+                name="username"
+                label="Username"
+                placeholder="Choose a username"
+                value={formData.username}
+                onChange={handleInputChange}
+                filled
+                floatLabel
+                helpText="Username must be unique"
+              />
+              
+              <InputTextField
+                id="password"
+                name="password"
+                label="Password"
+                type="password"
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={handleInputChange}
+                invalid={!!errors.password}
+                errorMessage={errors.password}
+                required
+                helpText="At least 8 characters"
+              />
+              
+              <div className="pt-4">
+                <Button type="submit" className="w-full md:w-auto">
+                  Create User
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );

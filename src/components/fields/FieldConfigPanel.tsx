@@ -1,9 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { 
   Form, 
   FormControl, 
@@ -17,10 +17,31 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { FieldValidationPanel } from './FieldValidationPanel';
-import { FieldAppearancePanel } from './FieldAppearancePanel';
-import { FieldAdvancedPanel } from './FieldAdvancedPanel';
+import { FieldAdvancedTab } from './FieldAdvancedTab'; 
+import { FieldAppearancePanel } from './appearance/FieldAppearancePanel';
+import { InputTextField } from './inputs/InputTextField';
+import { NumberInputField } from './inputs/NumberInputField';
 
-// Define a dynamic schema based on field type
+interface AppearanceSettings {
+  floatLabel?: boolean;
+  filled?: boolean;
+  width?: number;
+  display_mode?: string;
+  showCharCount?: boolean;
+  customClass?: string;
+  customCss?: string;
+}
+
+interface AdvancedSettings {
+  showButtons?: boolean;
+  buttonLayout?: 'horizontal' | 'vertical';
+  prefix?: string;
+  suffix?: string;
+  currency?: string;
+  locale?: string;
+  customData?: Record<string, any>;
+}
+
 const getFieldSchema = (fieldType: string | null) => {
   const baseSchema = {
     name: z.string().min(2, { message: "Field name must be at least 2 characters" }),
@@ -72,6 +93,17 @@ export function FieldConfigPanel({
   onUpdateAdvanced 
 }: FieldConfigPanelProps) {
   const [activeTab, setActiveTab] = useState('general');
+  const [validationSettings, setValidationSettings] = useState({});
+  const [appearanceSettings, setAppearanceSettings] = useState<AppearanceSettings>({});
+  const [advancedSettings, setAdvancedSettings] = useState<AdvancedSettings>({});
+  
+  useEffect(() => {
+    if (fieldData) {
+      setValidationSettings(fieldData.validation || {});
+      setAppearanceSettings(fieldData.appearance || {});
+      setAdvancedSettings(fieldData.advanced || {});
+    }
+  }, [fieldData]);
   
   const fieldSchema = getFieldSchema(fieldType);
   
@@ -82,7 +114,7 @@ export function FieldConfigPanel({
       description: '',
       helpText: '',
       required: false,
-      defaultValue: undefined,
+      defaultValue: fieldType === 'number' ? 0 : '',
       ui_options: {
         placeholder: '',
         help_text: '',
@@ -95,31 +127,81 @@ export function FieldConfigPanel({
   });
 
   const handleSubmit = (values: any) => {
-    // Prepare advanced settings
-    const advancedSettings = {
-      keyFilter: values.keyFilter,
-      min: values.min,
-      max: values.max,
+    const combinedData = {
+      ...values,
+      validation: validationSettings,
+      appearance: appearanceSettings,
+      advanced: advancedSettings,
     };
     
-    onUpdateAdvanced(advancedSettings);
-    onSave(values);
+    onSave(combinedData);
   };
 
-  const handleUpdateAdvanced = (advancedData: any) => {
-    // Forward advanced settings to parent component
-    onUpdateAdvanced(advancedData);
+  const handleUpdateValidation = (data: any) => {
+    setValidationSettings(data);
+  };
+
+  const handleUpdateAppearance = (data: any) => {
+    setAppearanceSettings(data);
+  };
+
+  const handleUpdateAdvanced = (data: any) => {
+    setAdvancedSettings(data);
+    onUpdateAdvanced(data);
+  };
+
+  const renderFieldPreview = () => {
+    switch (fieldType) {
+      case 'text':
+        return (
+          <div className="mt-4 p-4 border rounded-md">
+            <h3 className="text-sm font-medium mb-2">Field Preview:</h3>
+            <InputTextField
+              id="preview-field"
+              label={form.watch('name') || "Field Label"}
+              placeholder={form.watch('ui_options.placeholder') || "Enter text..."}
+              helpText={form.watch('helpText')}
+              keyFilter={form.watch('keyFilter') || "none"}
+              floatLabel={appearanceSettings.floatLabel}
+              filled={appearanceSettings.filled}
+            />
+          </div>
+        );
+      case 'number':
+        return (
+          <div className="mt-4 p-4 border rounded-md">
+            <h3 className="text-sm font-medium mb-2">Field Preview:</h3>
+            <NumberInputField
+              id="preview-number"
+              value={0}
+              onChange={() => {}}
+              label={form.watch('name') || "Number Field"}
+              min={form.watch('min')}
+              max={form.watch('max')}
+              placeholder={form.watch('ui_options.placeholder') || "Enter a number"}
+              floatLabel={appearanceSettings.floatLabel}
+              filled={appearanceSettings.filled}
+              showButtons={advancedSettings.showButtons}
+              buttonLayout={advancedSettings.buttonLayout || "horizontal"}
+              prefix={advancedSettings.prefix}
+              suffix={advancedSettings.suffix}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="validation">Validation</TabsTrigger>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-100">
+            <TabsTrigger value="general" className="data-[state=active]:bg-white">General</TabsTrigger>
+            <TabsTrigger value="validation" className="data-[state=active]:bg-white">Validation</TabsTrigger>
+            <TabsTrigger value="appearance" className="data-[state=active]:bg-white">Appearance</TabsTrigger>
+            <TabsTrigger value="advanced" className="data-[state=active]:bg-white">Advanced</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general">
@@ -187,40 +269,58 @@ export function FieldConfigPanel({
                   </FormItem>
                 )}
               />
+              
+              {renderFieldPreview()}
             </div>
           </TabsContent>
           
           <TabsContent value="validation">
-            <FieldValidationPanel />
+            <FieldValidationPanel 
+              fieldType={fieldType}
+              initialData={validationSettings}
+              onUpdate={handleUpdateValidation}
+            />
           </TabsContent>
           
           <TabsContent value="appearance">
-            <FieldAppearancePanel form={form} fieldType={fieldType} />
+            <FieldAppearancePanel
+              fieldType={fieldType}
+              initialData={appearanceSettings}
+              onSave={handleUpdateAppearance}
+            />
           </TabsContent>
           
           <TabsContent value="advanced">
-            <FieldAdvancedPanel 
+            <FieldAdvancedTab
               fieldType={fieldType}
-              initialData={fieldData?.advanced}
-              onSave={handleUpdateAdvanced}
+              fieldData={{
+                advanced: advancedSettings
+              }}
+              onUpdate={(data) => {
+                if (data.advanced) {
+                  handleUpdateAdvanced(data.advanced);
+                }
+              }}
             />
           </TabsContent>
         </Tabs>
         
         <div className="flex justify-end space-x-4 mt-6">
-          <button 
+          <Button 
             type="button" 
             onClick={onCancel} 
-            className="px-4 py-2 text-sm border rounded"
+            variant="outline"
+            className="px-4 py-2"
           >
             Cancel
-          </button>
-          <button 
+          </Button>
+          <Button 
             type="submit" 
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            variant="default"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700"
           >
             Save Field
-          </button>
+          </Button>
         </div>
       </form>
     </Form>

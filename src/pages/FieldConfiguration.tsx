@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, ArrowLeft, Save, Eye } from 'lucide-react';
+import { Plus, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FieldTypeSelector } from '@/components/fields/FieldTypeSelector';
 import { FieldConfigPanel } from '@/components/fields/FieldConfigPanel';
@@ -13,9 +12,8 @@ import { FieldValidationPanel } from '@/components/fields/FieldValidationPanel';
 import { FieldLayoutPanel } from '@/components/fields/FieldLayoutPanel';
 import { toast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getFieldsForCollection, createField } from '@/services/CollectionService';
+import { getFieldsForCollection, createField, deleteField } from '@/services/CollectionService';
 
-// Define the field types categorized by group
 const fieldTypes = {
   'Text & Numbers': [
     { id: 'text', name: 'Input', description: 'Single line text field' },
@@ -93,7 +91,6 @@ const fieldTypes = {
   ],
 };
 
-// Flatten the categories for mutation handling
 const flatFieldTypes = Object.entries(fieldTypes).flatMap(([category, types]) => 
   types.map(type => ({ ...type, group: category }))
 );
@@ -108,38 +105,69 @@ export default function FieldConfiguration() {
   const [activeTab, setActiveTab] = useState('fields');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [advancedSettings, setAdvancedSettings] = useState<any>({});
+  const [previewMode, setPreviewMode] = useState(false);
   
-  // Redirect if no collectionId
   useEffect(() => {
     if (!collectionId) {
       navigate('/collections');
     }
   }, [collectionId, navigate]);
 
-  // Auto-select the first category if none is selected
   useEffect(() => {
     if (!activeCategory && Object.keys(fieldTypes).length > 0) {
       setActiveCategory(Object.keys(fieldTypes)[0]);
     }
   }, [activeCategory]);
   
-  // Fetch fields for the selected collection
   const { data: fields = [], isLoading, error } = useQuery({
     queryKey: ['fields', collectionId],
     queryFn: () => getFieldsForCollection(collectionId!),
     enabled: !!collectionId
   });
   
-  // Create field mutation
   const createFieldMutation = useMutation({
     mutationFn: (fieldData: any) => createField(collectionId!, fieldData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fields', collectionId] });
-      // Also invalidate collections to update fields count
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setSelectedFieldType(null);
       setSelectedFieldId(null);
       setAdvancedSettings({});
+      
+      toast({
+        title: "Field created",
+        description: "Your field has been successfully created",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error creating field",
+        description: "There was an error creating your field. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error creating field:", error);
+    }
+  });
+
+  const deleteFieldMutation = useMutation({
+    mutationFn: (fieldId: string) => deleteField(collectionId!, fieldId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fields', collectionId] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setSelectedFieldId(null);
+      
+      toast({
+        title: "Field deleted",
+        description: "Your field has been successfully deleted",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting field",
+        description: "There was an error deleting your field. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error deleting field:", error);
     }
   });
 
@@ -152,25 +180,22 @@ export default function FieldConfiguration() {
     setSelectedFieldId(fieldId);
     setSelectedFieldType(null);
   };
+  
+  const handleDeleteField = (fieldId: string) => {
+    deleteFieldMutation.mutate(fieldId);
+  };
 
   const handleSaveField = async (fieldData: any) => {
     if (selectedFieldId) {
-      // Update existing field - not implemented yet
       toast({
         title: "Field updated",
         description: `The field "${fieldData.name}" has been updated.`,
       });
     } else {
-      // Add new field with advanced settings
       createFieldMutation.mutate({
         ...fieldData,
         type: selectedFieldType,
         advanced: advancedSettings
-      });
-      
-      toast({
-        title: "Field created",
-        description: `The field "${fieldData.name}" has been created.`,
       });
     }
   };
@@ -179,12 +204,23 @@ export default function FieldConfiguration() {
     setAdvancedSettings(settings);
   };
 
+  const handlePreview = () => {
+    setPreviewMode(true);
+    
+    const previewUrl = `/collections/${collectionId}/preview`;
+    window.open(previewUrl, '_blank', 'noopener,noreferrer');
+    
+    toast({
+      title: "Preview mode",
+      description: "Previewing your collection in a new tab",
+    });
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'fields':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Fields List Panel */}
             <Card className="col-span-1">
               <CardHeader>
                 <CardTitle className="text-lg flex justify-between items-center">
@@ -195,7 +231,6 @@ export default function FieldConfiguration() {
                     onClick={() => {
                       setSelectedFieldId(null);
                       setSelectedFieldType(null);
-                      setActiveTab('fields');
                     }}
                     className="h-8 gap-1"
                   >
@@ -215,14 +250,14 @@ export default function FieldConfiguration() {
                 ) : (
                   <FieldList 
                     fields={fields} 
-                    onSelectField={selectField} 
+                    onSelectField={selectField}
+                    onDeleteField={handleDeleteField}
                     selectedFieldId={selectedFieldId}
                   />
                 )}
               </CardContent>
             </Card>
             
-            {/* Field Type Selector or Configuration Panel */}
             <Card className="col-span-1 lg:col-span-2">
               {!selectedFieldType && !selectedFieldId ? (
                 <>
@@ -257,16 +292,33 @@ export default function FieldConfiguration() {
                 </>
               ) : (
                 <>
-                  <CardHeader>
-                    <CardTitle className="text-lg">
-                      {selectedFieldId ? 'Edit Field' : 'New Field'}
-                    </CardTitle>
-                    <CardDescription>
-                      {selectedFieldId 
-                        ? 'Modify the field properties' 
-                        : `Configure your new ${flatFieldTypes.find(t => t.id === selectedFieldType)?.name} field`
-                      }
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">
+                        {selectedFieldId ? 'Edit Field' : 'New Field'}
+                      </CardTitle>
+                      <CardDescription>
+                        {selectedFieldId 
+                          ? 'Modify the field properties' 
+                          : `Configure your new ${flatFieldTypes.find(t => t.id === selectedFieldType)?.name} field`
+                        }
+                      </CardDescription>
+                    </div>
+                    {selectedFieldId && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          if (window.confirm("Are you sure you want to delete this field?")) {
+                            handleDeleteField(selectedFieldId);
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Field
+                      </Button>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <FieldConfigPanel
@@ -289,7 +341,12 @@ export default function FieldConfiguration() {
         return (
           <Card>
             <CardContent className="pt-6">
-              <FieldValidationPanel />
+              <FieldValidationPanel 
+                fieldType={selectedFieldId ? fields.find(f => f.id === selectedFieldId)?.type || null : null} 
+                onUpdate={(data) => {
+                  console.log("Validation settings updated:", data);
+                }}
+              />
             </CardContent>
           </Card>
         );
@@ -323,7 +380,11 @@ export default function FieldConfiguration() {
           </div>
           
           <div className="flex gap-3 mt-4 md:mt-0">
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={handlePreview}
+            >
               <Eye className="h-4 w-4" />
               Preview
             </Button>
