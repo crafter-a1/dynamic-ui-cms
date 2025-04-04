@@ -1,13 +1,12 @@
 
 import { useState, useEffect } from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetClose,
-  SheetFooter,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, GripVertical, AlertCircle, Settings2, Copy, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import { Component, ComponentField } from "./ComponentsPanel";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { adaptFieldsForPreview } from "@/utils/fieldAdapters";
@@ -247,300 +245,305 @@ export function CreateComponentDrawer({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-[1000px] p-0 border-l-0">
-        <div className="flex flex-col h-full">
-          <SheetHeader className="px-6 py-4 border-b">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="text-xl">
-                {initialData ? "Edit Component" : "Create New Component"}
-              </SheetTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={() => setPreviewMode(!previewMode)}
-              >
-                <Eye className="h-4 w-4" />
-                <span>Preview</span>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl p-0 gap-0">
+        <div className="flex items-center justify-between p-6 border-b">
+          <DialogTitle className="text-xl font-semibold">
+            {initialData ? "Edit Component" : "Create New Component"}
+          </DialogTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 h-9"
+              onClick={() => setPreviewMode(!previewMode)}
+            >
+              <Eye className="h-4 w-4" />
+              <span>Preview</span>
+            </Button>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <X className="h-4 w-4" />
               </Button>
+            </DialogClose>
+          </div>
+        </div>
+
+        <ScrollArea className="max-h-[calc(100vh-180px)] px-6 py-6">
+          {previewMode ? (
+            <div className="space-y-6">
+              <div className="p-6 border rounded-lg bg-gray-50">
+                <div className="mb-4">
+                  <h2 className="text-xl font-semibold mb-2">{name || "Component Name"}</h2>
+                  <p className="text-gray-500">{description || "Component description"}</p>
+                  <Badge variant="outline" className="mt-2 capitalize">{category}</Badge>
+                </div>
+
+                <div className="space-y-4 mt-6">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="p-4 bg-white border rounded-md shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-medium">{field.name}</h3>
+                        <Badge variant={field.required ? "default" : "outline"} className="text-xs">
+                          {field.required ? "Required" : "Optional"}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <span className="uppercase px-1.5 py-0.5 bg-gray-100 rounded mr-2">
+                          {field.type}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </SheetHeader>
-
-          <ScrollArea className="flex-1 px-6 py-6">
-            {previewMode ? (
+          ) : (
+            <div className="space-y-8">
               <div className="space-y-6">
-                <div className="p-6 border rounded-lg bg-gray-50">
-                  <div className="mb-4">
-                    <h2 className="text-xl font-semibold mb-2">{name || "Component Name"}</h2>
-                    <p className="text-gray-500">{description || "Component description"}</p>
-                    <Badge variant="outline" className="mt-2 capitalize">{category}</Badge>
+                <div>
+                  <Label htmlFor="name" className="text-base font-medium block mb-1.5">Component Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter component name"
+                    className={cn(
+                      validationErrors.name && "border-red-500"
+                    )}
+                  />
+                  {validationErrors.name && (
+                    <p className="text-sm text-red-500 mt-1">{validationErrors.name}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="description" className="text-base font-medium block mb-1.5">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter component description"
+                    className={cn(
+                      "min-h-[100px]",
+                      validationErrors.description && "border-red-500"
+                    )}
+                  />
+                  {validationErrors.description && (
+                    <p className="text-sm text-red-500 mt-1">{validationErrors.description}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="category" className="text-base font-medium block mb-1.5">Category</Label>
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {componentCategories.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label className="text-base font-medium">Fields</Label>
+                  <Button 
+                    size="sm" 
+                    className="bg-gray-900 hover:bg-gray-800 text-white"
+                    onClick={() => setAddingField(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Field
+                  </Button>
+                  <Dialog open={addingField} onOpenChange={setAddingField}>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Add Field</DialogTitle>
+                      </DialogHeader>
+                      
+                      <Tabs value={activeTab} onValueChange={setActiveTab}>
+                        <TabsList className="mb-4 flex flex-wrap h-auto">
+                          {Object.keys(fieldTypes).map((category) => (
+                            <TabsTrigger key={category} value={category} className="h-9">
+                              {category}
+                            </TabsTrigger>
+                          ))}
+                        </TabsList>
+                        
+                        {Object.entries(fieldTypes).map(([category, types]) => (
+                          <TabsContent key={category} value={category}>
+                            <FieldTypeSelector 
+                              fieldTypes={types} 
+                              onSelectFieldType={handleAddField} 
+                            />
+                          </TabsContent>
+                        ))}
+                      </Tabs>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                
+                {validationErrors.fields && (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{validationErrors.fields}</AlertDescription>
+                  </Alert>
+                )}
+                
+                {fields.length === 0 ? (
+                  <div className="border border-dashed rounded-md p-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Plus className="h-12 w-12 text-gray-300 mb-4" />
+                      <p className="text-gray-500 mb-4">No fields added yet. Click "Add Field" to add your first field.</p>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setAddingField(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" /> Add Field
+                      </Button>
+                    </div>
                   </div>
-
-                  <div className="space-y-4 mt-6">
+                ) : (
+                  <div className="space-y-3">
                     {fields.map((field, index) => (
-                      <div key={field.id} className="p-4 bg-white border rounded-md shadow-sm">
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="font-medium">{field.name}</h3>
-                          <Badge variant={field.required ? "default" : "outline"} className="text-xs">
-                            {field.required ? "Required" : "Optional"}
-                          </Badge>
+                      <div 
+                        key={field.id}
+                        className={cn(
+                          "flex items-center gap-2 p-3 bg-white rounded-md border transition-all",
+                          draggedField === field.id && "border-blue-500 opacity-50",
+                          fieldSettingsId === field.id && "ring-2 ring-blue-200"
+                        )}
+                        draggable="true"
+                        onDragStart={() => setDraggedField(field.id)}
+                        onDragEnd={() => setDraggedField(null)}
+                      >
+                        <div className="text-gray-400 cursor-move">
+                          <GripVertical className="h-5 w-5" />
                         </div>
-                        <div className="text-xs text-gray-500">
-                          <span className="uppercase px-1.5 py-0.5 bg-gray-100 rounded mr-2">
-                            {field.type}
-                          </span>
+                        <div className="flex-1">
+                          <div className="flex flex-col md:flex-row md:items-center gap-2">
+                            <Input
+                              value={field.name}
+                              onChange={(e) => handleFieldChange(field.id, { name: e.target.value })}
+                              placeholder="Field name"
+                              className="h-9 md:flex-1"
+                            />
+                            <Select 
+                              value={field.required ? "true" : "false"}
+                              onValueChange={(value) => handleFieldChange(field.id, { required: value === "true" })}
+                            >
+                              <SelectTrigger className="w-32 h-9 shrink-0">
+                                <SelectValue placeholder="Required?" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="true">Required</SelectItem>
+                                <SelectItem value="false">Optional</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-500 flex items-center">
+                            <span className="uppercase px-1.5 py-0.5 bg-gray-100 rounded text-gray-600 mr-2">
+                              {field.type}
+                            </span>
+                            Field #{index + 1}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="flex flex-col md:flex-row gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-gray-500"
+                              onClick={() => moveFieldUp(index)}
+                              disabled={index === 0}
+                            >
+                              <ChevronUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-gray-500"
+                              onClick={() => moveFieldDown(index)}
+                              disabled={index === fields.length - 1}
+                            >
+                              <ChevronDown className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <Popover
+                            open={fieldSettingsId === field.id}
+                            onOpenChange={(open) => setFieldSettingsId(open ? field.id : null)}
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-gray-500"
+                              >
+                                <Settings2 className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-56 p-2" side="left">
+                              <div className="space-y-2">
+                                <div className="font-medium text-sm px-2 py-1">
+                                  Field Options
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start text-sm"
+                                  onClick={() => duplicateField(field)}
+                                >
+                                  <Copy className="h-3.5 w-3.5 mr-2" />
+                                  Duplicate Field
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start text-sm text-red-500 hover:text-red-600 hover:bg-red-50"
+                                  onClick={() => handleRemoveField(field.id)}
+                                >
+                                  <X className="h-3.5 w-3.5 mr-2" />
+                                  Remove Field
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-gray-500 hover:text-red-500"
+                            onClick={() => handleRemoveField(field.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name" className="text-base font-medium">Component Name</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter component name"
-                      className={cn(
-                        "mt-2",
-                        validationErrors.name && "border-red-500"
-                      )}
-                    />
-                    {validationErrors.name && (
-                      <p className="text-sm text-red-500 mt-1">{validationErrors.name}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="description" className="text-base font-medium">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Enter component description"
-                      className={cn(
-                        "mt-2 min-h-[100px]",
-                        validationErrors.description && "border-red-500"
-                      )}
-                    />
-                    {validationErrors.description && (
-                      <p className="text-sm text-red-500 mt-1">{validationErrors.description}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="category" className="text-base font-medium">Category</Label>
-                    <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {componentCategories.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium">Fields</Label>
-                    <Dialog open={addingField} onOpenChange={setAddingField}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="default" className="bg-slate-900">
-                          <Plus className="h-4 w-4 mr-1" /> Add Field
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg">
-                        <DialogHeader>
-                          <DialogTitle>Add Field</DialogTitle>
-                        </DialogHeader>
-                        
-                        <Tabs value={activeTab} onValueChange={setActiveTab}>
-                          <TabsList className="mb-4 flex flex-wrap h-auto">
-                            {Object.keys(fieldTypes).map((category) => (
-                              <TabsTrigger key={category} value={category} className="h-9">
-                                {category}
-                              </TabsTrigger>
-                            ))}
-                          </TabsList>
-                          
-                          {Object.entries(fieldTypes).map(([category, types]) => (
-                            <TabsContent key={category} value={category}>
-                              <FieldTypeSelector 
-                                fieldTypes={types} 
-                                onSelectFieldType={handleAddField} 
-                              />
-                            </TabsContent>
-                          ))}
-                        </Tabs>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                  
-                  {validationErrors.fields && (
-                    <Alert variant="destructive" className="py-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{validationErrors.fields}</AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  {fields.length === 0 ? (
-                    <div className="border border-dashed rounded-md p-12 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <Plus className="h-12 w-12 text-gray-300 mb-4" />
-                        <p className="text-gray-500 mb-4">No fields added yet. Click "Add Field" to add your first field.</p>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setAddingField(true)}
-                        >
-                          <Plus className="h-4 w-4 mr-2" /> Add Field
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {fields.map((field, index) => (
-                        <div 
-                          key={field.id}
-                          className={cn(
-                            "flex items-center gap-2 p-3 bg-white rounded-md border transition-all",
-                            draggedField === field.id && "border-blue-500 opacity-50",
-                            fieldSettingsId === field.id && "ring-2 ring-blue-200"
-                          )}
-                          draggable="true"
-                          onDragStart={() => setDraggedField(field.id)}
-                          onDragEnd={() => setDraggedField(null)}
-                        >
-                          <div className="text-gray-400 cursor-move">
-                            <GripVertical className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex flex-col md:flex-row md:items-center gap-2">
-                              <Input
-                                value={field.name}
-                                onChange={(e) => handleFieldChange(field.id, { name: e.target.value })}
-                                placeholder="Field name"
-                                className="h-9 md:flex-1"
-                              />
-                              <Select 
-                                value={field.required ? "true" : "false"}
-                                onValueChange={(value) => handleFieldChange(field.id, { required: value === "true" })}
-                              >
-                                <SelectTrigger className="w-32 h-9 shrink-0">
-                                  <SelectValue placeholder="Required?" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="true">Required</SelectItem>
-                                  <SelectItem value="false">Optional</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="mt-2 text-xs text-gray-500 flex items-center">
-                              <span className="uppercase px-1.5 py-0.5 bg-gray-100 rounded text-gray-600 mr-2">
-                                {field.type}
-                              </span>
-                              Field #{index + 1}
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <div className="flex flex-col md:flex-row gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-gray-500"
-                                onClick={() => moveFieldUp(index)}
-                                disabled={index === 0}
-                              >
-                                <ChevronUp className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-gray-500"
-                                onClick={() => moveFieldDown(index)}
-                                disabled={index === fields.length - 1}
-                              >
-                                <ChevronDown className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <Popover
-                              open={fieldSettingsId === field.id}
-                              onOpenChange={(open) => setFieldSettingsId(open ? field.id : null)}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-gray-500"
-                                >
-                                  <Settings2 className="h-4 w-4" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-56 p-2" side="left">
-                                <div className="space-y-2">
-                                  <div className="font-medium text-sm px-2 py-1">
-                                    Field Options
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start text-sm"
-                                    onClick={() => duplicateField(field)}
-                                  >
-                                    <Copy className="h-3.5 w-3.5 mr-2" />
-                                    Duplicate Field
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start text-sm text-red-500 hover:text-red-600 hover:bg-red-50"
-                                    onClick={() => handleRemoveField(field.id)}
-                                  >
-                                    <X className="h-3.5 w-3.5 mr-2" />
-                                    Remove Field
-                                  </Button>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-gray-500 hover:text-red-500"
-                              onClick={() => handleRemoveField(field.id)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </ScrollArea>
-          
-          <SheetFooter className="px-6 py-4 border-t">
-            <div className="w-full flex justify-between">
-              <SheetClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </SheetClose>
-              <Button onClick={handleSaveComponent} className="bg-slate-900">
-                {initialData ? "Update Component" : "Create Component"}
-              </Button>
             </div>
-          </SheetFooter>
+          )}
+        </ScrollArea>
+        
+        <div className="flex justify-between items-center p-6 border-t mt-auto">
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button 
+            onClick={handleSaveComponent} 
+            className="bg-gray-900 hover:bg-gray-800"
+          >
+            {initialData ? "Update Component" : "Create Component"}
+          </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
