@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, ArrowLeft, Save, Eye, Trash2, FileComponent } from 'lucide-react';
+import { Plus, ArrowLeft, Save, Eye, Trash2, FileType } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FieldTypeSelector } from '@/components/fields/FieldTypeSelector';
 import { FieldConfigPanel } from '@/components/fields/FieldConfigPanel';
@@ -255,7 +256,7 @@ export default function FieldConfiguration() {
                       onClick={() => setComponentSelectorOpen(true)}
                       className="h-8 gap-1"
                     >
-                      <FileComponent className="h-4 w-4" />
+                      <FileType className="h-4 w-4" />
                       Add Component
                     </Button>
                     <Button 

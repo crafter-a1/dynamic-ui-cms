@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Drawer, 
@@ -13,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, DragHandleDots2Icon, AlertCircle } from "lucide-react";
+import { Plus, X, GripVertical, AlertCircle } from "lucide-react";
 import { Component, ComponentField } from "./ComponentsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -34,7 +33,6 @@ const componentCategories = [
   { value: "custom", label: "Custom" }
 ];
 
-// Define field types using the existing structure
 const fieldTypes = {
   'Text & Numbers': [
     { id: 'text', name: 'Input Text', description: 'Single line text field' },
@@ -275,7 +273,7 @@ export function CreateComponentDrawer({
                         className="flex items-center gap-2 p-3 bg-gray-50 rounded-md border"
                       >
                         <div className="text-gray-400">
-                          <DragHandleDots2Icon className="h-5 w-5" />
+                          <GripVertical className="h-5 w-5" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
