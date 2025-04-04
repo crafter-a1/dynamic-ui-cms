@@ -1,19 +1,19 @@
 
 import { useState, useEffect } from "react";
-import { 
-  Drawer, 
-  DrawerClose, 
-  DrawerContent, 
-  DrawerFooter, 
-  DrawerHeader, 
-  DrawerTitle
-} from "@/components/ui/drawer";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, GripVertical, AlertCircle, Settings2, Copy, Check, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Plus, X, GripVertical, AlertCircle, Settings2, Copy, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import { Component, ComponentField } from "./ComponentsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -247,25 +247,27 @@ export function CreateComponentDrawer({
   };
 
   return (
-    <>
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="border-b pb-4">
-            <DrawerTitle className="text-xl flex justify-between items-center">
-              <span>{initialData ? "Edit Component" : "Create New Component"}</span>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-[1000px] p-0 border-l-0">
+        <div className="flex flex-col h-full">
+          <SheetHeader className="px-6 py-4 border-b">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-xl">
+                {initialData ? "Edit Component" : "Create New Component"}
+              </SheetTitle>
               <Button
-                variant="outline" 
+                variant="outline"
                 size="sm"
+                className="flex items-center gap-2"
                 onClick={() => setPreviewMode(!previewMode)}
-                className="text-xs"
               >
-                <Eye className="h-4 w-4 mr-2" />
-                {previewMode ? "Edit Mode" : "Preview"}
+                <Eye className="h-4 w-4" />
+                <span>Preview</span>
               </Button>
-            </DrawerTitle>
-          </DrawerHeader>
-          
-          <ScrollArea className="flex-1 p-6">
+            </div>
+          </SheetHeader>
+
+          <ScrollArea className="flex-1 px-6 py-6">
             {previewMode ? (
               <div className="space-y-6">
                 <div className="p-6 border rounded-lg bg-gray-50">
@@ -295,40 +297,46 @@ export function CreateComponentDrawer({
                 </div>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Component Name</Label>
+                  <div>
+                    <Label htmlFor="name" className="text-base font-medium">Component Name</Label>
                     <Input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter component name"
-                      className={cn(validationErrors.name && "border-red-500")}
+                      className={cn(
+                        "mt-2",
+                        validationErrors.name && "border-red-500"
+                      )}
                     />
                     {validationErrors.name && (
-                      <p className="text-sm text-red-500">{validationErrors.name}</p>
+                      <p className="text-sm text-red-500 mt-1">{validationErrors.name}</p>
                     )}
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                  <div>
+                    <Label htmlFor="description" className="text-base font-medium">Description</Label>
                     <Textarea
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Enter component description"
-                      className={cn(validationErrors.description && "border-red-500")}
+                      className={cn(
+                        "mt-2 min-h-[100px]",
+                        validationErrors.description && "border-red-500"
+                      )}
                     />
                     {validationErrors.description && (
-                      <p className="text-sm text-red-500">{validationErrors.description}</p>
+                      <p className="text-sm text-red-500 mt-1">{validationErrors.description}</p>
                     )}
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
+                  <div>
+                    <Label htmlFor="category" className="text-base font-medium">Category</Label>
                     <Select value={category} onValueChange={setCategory}>
-                      <SelectTrigger>
+                      <SelectTrigger className="mt-2">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -342,12 +350,12 @@ export function CreateComponentDrawer({
                   </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <Label>Fields</Label>
+                    <Label className="text-base font-medium">Fields</Label>
                     <Dialog open={addingField} onOpenChange={setAddingField}>
                       <DialogTrigger asChild>
-                        <Button size="sm" className="h-8">
+                        <Button size="sm" variant="default" className="bg-slate-900">
                           <Plus className="h-4 w-4 mr-1" /> Add Field
                         </Button>
                       </DialogTrigger>
@@ -386,27 +394,25 @@ export function CreateComponentDrawer({
                   )}
                   
                   {fields.length === 0 ? (
-                    <div className="border border-dashed rounded-md p-4 text-center text-gray-500">
-                      <div className="mb-2">
-                        <Plus className="h-12 w-12 mx-auto text-gray-300" />
+                    <div className="border border-dashed rounded-md p-12 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <Plus className="h-12 w-12 text-gray-300 mb-4" />
+                        <p className="text-gray-500 mb-4">No fields added yet. Click "Add Field" to add your first field.</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setAddingField(true)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add Field
+                        </Button>
                       </div>
-                      <p className="text-sm">No fields added yet. Click "Add Field" to add your first field.</p>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setAddingField(true)}
-                        className="mt-3"
-                      >
-                        <Plus className="h-4 w-4 mr-1" /> Add Field
-                      </Button>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {fields.map((field, index) => (
                         <div 
                           key={field.id}
                           className={cn(
-                            "flex items-center gap-2 p-3 bg-gray-50 rounded-md border transition-all",
+                            "flex items-center gap-2 p-3 bg-white rounded-md border transition-all",
                             draggedField === field.id && "border-blue-500 opacity-50",
                             fieldSettingsId === field.id && "ring-2 ring-blue-200"
                           )}
@@ -423,13 +429,13 @@ export function CreateComponentDrawer({
                                 value={field.name}
                                 onChange={(e) => handleFieldChange(field.id, { name: e.target.value })}
                                 placeholder="Field name"
-                                className="h-8 md:flex-1"
+                                className="h-9 md:flex-1"
                               />
                               <Select 
                                 value={field.required ? "true" : "false"}
                                 onValueChange={(value) => handleFieldChange(field.id, { required: value === "true" })}
                               >
-                                <SelectTrigger className="w-32 h-8 shrink-0">
+                                <SelectTrigger className="w-32 h-9 shrink-0">
                                   <SelectValue placeholder="Required?" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -439,7 +445,7 @@ export function CreateComponentDrawer({
                               </Select>
                             </div>
                             <div className="mt-2 text-xs text-gray-500 flex items-center">
-                              <span className="uppercase px-1.5 py-0.5 bg-gray-200 rounded text-gray-600 mr-2">
+                              <span className="uppercase px-1.5 py-0.5 bg-gray-100 rounded text-gray-600 mr-2">
                                 {field.type}
                               </span>
                               Field #{index + 1}
@@ -523,18 +529,18 @@ export function CreateComponentDrawer({
             )}
           </ScrollArea>
           
-          <DrawerFooter className="border-t pt-4">
-            <div className="flex justify-between w-full">
-              <DrawerClose asChild>
+          <SheetFooter className="px-6 py-4 border-t">
+            <div className="w-full flex justify-between">
+              <SheetClose asChild>
                 <Button variant="outline">Cancel</Button>
-              </DrawerClose>
-              <Button onClick={handleSaveComponent}>
+              </SheetClose>
+              <Button onClick={handleSaveComponent} className="bg-slate-900">
                 {initialData ? "Update Component" : "Create Component"}
               </Button>
             </div>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    </>
+          </SheetFooter>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
