@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, ArrowLeft, Save, Eye, Trash2 } from 'lucide-react';
+import { Plus, ArrowLeft, Save, Eye, Trash2, FileComponent } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FieldTypeSelector } from '@/components/fields/FieldTypeSelector';
 import { FieldConfigPanel } from '@/components/fields/FieldConfigPanel';
@@ -13,6 +13,8 @@ import { FieldLayoutPanel } from '@/components/fields/FieldLayoutPanel';
 import { toast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFieldsForCollection, createField, deleteField } from '@/services/CollectionService';
+import { ComponentSelector } from '@/components/components/ComponentSelector';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const fieldTypes = {
   'Text & Numbers': [
@@ -106,6 +108,7 @@ export default function FieldConfiguration() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [advancedSettings, setAdvancedSettings] = useState<any>({});
   const [previewMode, setPreviewMode] = useState(false);
+  const [componentSelectorOpen, setComponentSelectorOpen] = useState(false);
   
   useEffect(() => {
     if (!collectionId) {
@@ -216,6 +219,26 @@ export default function FieldConfiguration() {
     });
   };
 
+  const addComponentFields = (componentId: string, componentFields: any[]) => {
+    const fieldsToAdd = componentFields.map(field => ({
+      name: field.name,
+      type: field.type,
+      description: '',
+      placeholder: `Enter ${field.name}`,
+      required: field.required,
+      config: field.config || {},
+    }));
+    
+    fieldsToAdd.forEach(fieldData => {
+      createFieldMutation.mutate(fieldData);
+    });
+    
+    toast({
+      title: "Component added",
+      description: `Added ${fieldsToAdd.length} fields from the component to your collection.`,
+    });
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'fields':
@@ -225,18 +248,29 @@ export default function FieldConfiguration() {
               <CardHeader>
                 <CardTitle className="text-lg flex justify-between items-center">
                   Fields
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => {
-                      setSelectedFieldId(null);
-                      setSelectedFieldType(null);
-                    }}
-                    className="h-8 gap-1"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Field
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => setComponentSelectorOpen(true)}
+                      className="h-8 gap-1"
+                    >
+                      <FileComponent className="h-4 w-4" />
+                      Add Component
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => {
+                        setSelectedFieldId(null);
+                        setSelectedFieldType(null);
+                      }}
+                      className="h-8 gap-1"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Field
+                    </Button>
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   All fields defined for this collection
@@ -406,6 +440,25 @@ export default function FieldConfiguration() {
             {renderTabContent()}
           </TabsContent>
         </Tabs>
+
+        <Dialog open={componentSelectorOpen} onOpenChange={setComponentSelectorOpen}>
+          <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+              <DialogTitle>Add Component</DialogTitle>
+              <DialogDescription>
+                Select a component to add its fields to your collection
+              </DialogDescription>
+            </DialogHeader>
+            
+            <ComponentSelector 
+              onSelectComponent={(component) => {
+                addComponentFields(component.id, component.fields);
+                setComponentSelectorOpen(false);
+              }}
+              onCancel={() => setComponentSelectorOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

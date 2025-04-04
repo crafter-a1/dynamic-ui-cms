@@ -11,6 +11,7 @@ import FieldConfiguration from '@/pages/FieldConfiguration';
 import CollectionPreview from '@/pages/CollectionPreview';
 import Content from '@/pages/Content';
 import Components from '@/pages/Components';
+import ComponentDetails from '@/pages/ComponentDetails';
 import Api from '@/pages/Api';
 import Users from '@/pages/Users';
 import Login from '@/pages/Login';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/collections/:collectionId/preview" element={<CollectionPreview />} />
             <Route path="/content" element={<Content />} />
             <Route path="/components" element={<Components />} />
+            <Route path="/components/:componentId" element={<ComponentDetails />} />
             <Route path="/api" element={<Api />} />
             <Route path="/users" element={<Users />} />
             <Route path="/login" element={<Login />} />
