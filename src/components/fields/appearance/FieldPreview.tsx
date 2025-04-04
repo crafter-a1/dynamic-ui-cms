@@ -178,10 +178,45 @@ export function FieldPreview({
         break;
     }
     
-    // Apply custom CSS if provided
-    const customStyles = settings.customCSS ? 
-      { style: { ...inputStyle, ...JSON.parse(`{${settings.customCSS}}`) } } : 
-      { style: inputStyle };
+    // Apply custom CSS if provided - Fix the JSON parsing error
+    let customStyles = { style: inputStyle };
+    
+    if (settings.customCSS) {
+      try {
+        // Handle customCSS safely without using JSON.parse
+        const customCssObj: React.CSSProperties = {};
+        
+        // Parse the CSS string into key-value pairs
+        const cssString = settings.customCSS.trim();
+        const cssEntries = cssString.split(';')
+          .filter(entry => entry.trim() !== '')
+          .map(entry => {
+            const [prop, value] = entry.split(':').map(part => part.trim());
+            // Convert kebab-case to camelCase
+            const camelProp = prop.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+            return [camelProp, value];
+          });
+          
+        // Build the custom styles object
+        cssEntries.forEach(([prop, value]) => {
+          if (prop && value) {
+            customCssObj[prop as keyof React.CSSProperties] = value;
+          }
+        });
+        
+        // Merge with inputStyle
+        customStyles = { 
+          style: { 
+            ...inputStyle, 
+            ...customCssObj 
+          } 
+        };
+      } catch (error) {
+        console.error('Error parsing custom CSS:', error);
+        // Fall back to the original style
+        customStyles = { style: inputStyle };
+      }
+    }
     
     return { containerStyle, labelStyle, inputStyle: customStyles };
   };
@@ -251,7 +286,10 @@ export function FieldPreview({
       </div>
       
       <div style={containerStyle} className="border rounded-md">
-        <label style={labelStyle}>
+        <label 
+          className={cn("block", previewState === 'error' && "text-red-500")}
+          style={labelStyle}
+        >
           Field Label {previewState === 'error' && <span className="text-red-500">*</span>}
         </label>
         

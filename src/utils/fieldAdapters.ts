@@ -18,7 +18,7 @@ export const adaptFieldsForPreview = (fields: Field[]) => {
     helpText: field.description,
     min: field.config?.min,
     max: field.config?.max,
-    customCSS: field.appearance?.customCSS,
-    appearance: field.appearance || {}
+    customCSS: field.config?.customCSS || '',
+    appearance: field.config?.appearance || {}
   }));
 };
