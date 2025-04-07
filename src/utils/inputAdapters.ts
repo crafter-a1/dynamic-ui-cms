@@ -46,13 +46,17 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
   // Ensure we're working with an object
   const settings = typeof appearance === 'object' && appearance !== null ? appearance : {};
   
+  // Log original settings for debugging
+  console.log("Original appearance settings before normalization:", JSON.stringify(settings, null, 2));
+  
   // Validate and normalize UI variant - ensure we always have a valid value
-  const uiVariant = validateUIVariant(settings.uiVariant || settings.uiVariation);
+  // Try both common property names for UI variant
+  const uiVariant = validateUIVariant(settings.uiVariant || settings.uiVariation || 'standard');
   
   // Log the normalized UI variant for debugging
   console.log(`Normalized UI variant: ${uiVariant}`);
   
-  return {
+  const normalized = {
     uiVariant,
     theme: settings.theme || 'classic',
     colors: {
@@ -81,6 +85,9 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
       desktop: { fieldSize: 'medium' }
     }
   };
+  
+  console.log("Normalized appearance settings:", JSON.stringify(normalized, null, 2));
+  return normalized;
 };
 
 /**
@@ -90,6 +97,8 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
  * @returns Normalized field-specific settings
  */
 export const normalizeFieldSpecificSettings = (fieldType: string, settings: any = {}): Record<string, any> => {
+  console.log(`Normalizing field-specific settings for ${fieldType}:`, JSON.stringify(settings, null, 2));
+  
   const normalizedSettings: Record<string, any> = {};
   
   switch (fieldType.toLowerCase()) {

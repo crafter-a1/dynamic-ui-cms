@@ -41,14 +41,17 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
         advanced: advancedSettings
       };
       
+      // IMPORTANT: Preserve appearance settings
       // Ensure we don't lose appearance settings if they exist
       if (fieldData?.appearance) {
+        console.log("Preserving appearance settings when saving advanced settings:", 
+          JSON.stringify(fieldData.appearance, null, 2));
         updatedData.appearance = fieldData.appearance;
       }
       
       // Log what we're saving to debug any issues
-      console.log("Saving advanced settings:", advancedSettings);
-      console.log("Updated field data:", updatedData);
+      console.log("Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
+      console.log("Updated field data:", JSON.stringify(updatedData, null, 2));
       
       onUpdate(updatedData);
       

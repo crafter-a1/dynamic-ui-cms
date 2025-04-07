@@ -88,24 +88,50 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
   return fields.map(field => {
     const apiId = field.api_id || field.apiId || field.name?.toLowerCase().replace(/\s+/g, '_');
     
-    // Extract appearance settings more consistently, prioritizing settings.appearance
-    const appearance = field.settings?.appearance || field.appearance || {};
+    // Extract appearance settings more consistently
+    // Start by looking in settings.appearance, then field.appearance, then individual properties
+    let appearance = {};
     
-    // Make sure UI variant is always validated
-    if (!appearance.uiVariant) {
-      console.log(`Field ${field.name} is missing uiVariant, setting to default`);
-      appearance.uiVariant = 'standard';
-    } else {
-      console.log(`Field ${field.name} has uiVariant: ${appearance.uiVariant}`);
+    // Check all possible locations where appearance settings might be stored
+    if (field.settings?.appearance) {
+      appearance = { ...appearance, ...field.settings.appearance };
+      console.log(`Found appearance in settings.appearance for ${field.name}:`, 
+        JSON.stringify(field.settings.appearance, null, 2));
     }
     
-    // Normalize appearance settings to ensure consistent format
+    if (field.appearance) {
+      appearance = { ...appearance, ...field.appearance };
+      console.log(`Found appearance at root level for ${field.name}:`, 
+        JSON.stringify(field.appearance, null, 2));
+    }
+    
+    // Check for UI variant specifically in multiple possible locations
+    let uiVariant = appearance.uiVariant || appearance.uiVariation;
+    
+    // Also check for UI variant in settings directly
+    if (!uiVariant && field.settings?.uiVariant) {
+      uiVariant = field.settings.uiVariant;
+    }
+    
+    if (!uiVariant && field.settings?.uiVariation) {
+      uiVariant = field.settings.uiVariation;
+    }
+    
+    // If still no UI variant found, use standard
+    if (!uiVariant) {
+      console.log(`No uiVariant found for ${field.name}, setting to default 'standard'`);
+      uiVariant = 'standard';
+    } else {
+      console.log(`Field ${field.name} has uiVariant: ${uiVariant}`);
+    }
+    
+    // Ensure UI variant is included in appearance
     const normalizedAppearance = {
       ...appearance,
-      uiVariant: appearance.uiVariant
+      uiVariant: uiVariant
     };
     
-    // Extract field-specific settings based on field type
+    // Extract field-specific settings
     let fieldSpecificSettings = {};
     
     switch (field.type) {
@@ -162,11 +188,15 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     // Extract validation settings
     const validation = field.settings?.validation || field.validation || {};
     
-    // Extract advanced settings
-    const advanced = field.settings?.advanced || field.advanced || {};
+    // Extract advanced settings, merging with any previously extracted field-specific settings
+    const advanced = {
+      ...(field.settings?.advanced || field.advanced || {}),
+      ...fieldSpecificSettings
+    };
 
     // Debug logging for appearance settings
     console.log(`Processed appearance for ${field.name}:`, JSON.stringify(normalizedAppearance, null, 2));
+    console.log(`UI variant for ${field.name}: ${normalizedAppearance.uiVariant}`);
 
     // Get placeholder with consistent fallback
     let placeholder = ui_options.placeholder || field.placeholder || `Enter ${field.name}...`;
@@ -182,10 +212,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       ui_options: ui_options,
       validation: validation,
       appearance: normalizedAppearance,
-      advanced: {
-        ...advanced,
-        ...fieldSpecificSettings
-      },
+      advanced: advanced,
       options: field.options || [],
       // Include field-specific properties for backward compatibility
       ...fieldSpecificSettings
