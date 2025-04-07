@@ -81,6 +81,11 @@ export interface CollectionField {
     helpText?: string;
     [key: string]: any;
   };
+  validation?: ValidationSettings;
+  appearance?: AppearanceSettings;
+  advanced?: Record<string, any>;
+  ui_options?: Record<string, any>;
+  helpText?: string;
   sort_order?: number;
   collection_id?: string;
 }
@@ -179,27 +184,27 @@ export const CollectionService = {
       const settings: Record<string, any> = { ...(fieldData.settings || {}) };
 
       // Move any properties that should be inside settings to the proper location
-      if (fieldData.validation) {
+      if ('validation' in fieldData) {
         settings.validation = fieldData.validation;
         delete (restData as any).validation;
       }
 
-      if (fieldData.appearance) {
+      if ('appearance' in fieldData) {
         settings.appearance = fieldData.appearance;
         delete (restData as any).appearance;
       }
 
-      if (fieldData.advanced) {
+      if ('advanced' in fieldData) {
         settings.advanced = fieldData.advanced;
         delete (restData as any).advanced;
       }
 
-      if (fieldData.helpText) {
+      if ('helpText' in fieldData) {
         settings.helpText = fieldData.helpText;
         delete (restData as any).helpText;
       }
 
-      if (fieldData.ui_options) {
+      if ('ui_options' in fieldData) {
         settings.ui_options = fieldData.ui_options;
         delete (restData as any).ui_options;
       }
@@ -257,23 +262,23 @@ export const CollectionService = {
       console.log('Current settings before update:', JSON.stringify(currentSettings, null, 2));
 
       // Update UI options if provided
-      if (fieldData.settings?.ui_options) {
+      if (fieldData.settings?.ui_options || fieldData.ui_options) {
         settingsToUpdate.ui_options = {
           ...(currentSettings.ui_options || {}),
-          ...fieldData.settings.ui_options
+          ...(fieldData.settings?.ui_options || fieldData.ui_options || {})
         };
       }
 
       // Update help text if provided
-      if (fieldData.settings?.helpText !== undefined) {
-        settingsToUpdate.helpText = fieldData.settings.helpText;
+      if (fieldData.settings?.helpText !== undefined || fieldData.helpText !== undefined) {
+        settingsToUpdate.helpText = fieldData.settings?.helpText ?? fieldData.helpText;
       }
 
       // Update validation settings if provided
-      if (fieldData.settings?.validation) {
+      if (fieldData.settings?.validation || fieldData.validation) {
         settingsToUpdate.validation = {
           ...(currentSettings.validation || {}),
-          ...fieldData.settings.validation
+          ...(fieldData.settings?.validation || fieldData.validation || {})
         };
       }
 

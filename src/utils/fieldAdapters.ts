@@ -89,16 +89,16 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     const apiId = field.api_id || field.apiId || field.name?.toLowerCase().replace(/\s+/g, '_');
 
     // Consistently extract appearance settings from settings.appearance
-    const appearance = field.settings?.appearance || {};
+    const appearance = field.settings?.appearance || field.appearance || {};
     
     // Extract additional UI options
-    const ui_options = field.settings?.ui_options || {};
+    const ui_options = field.settings?.ui_options || field.ui_options || {};
     
     // Extract validation settings
-    const validation = field.settings?.validation || {};
+    const validation = field.settings?.validation || field.validation || {};
     
     // Extract advanced settings
-    const advanced = field.settings?.advanced || {};
+    const advanced = field.settings?.advanced || field.advanced || {};
 
     // Ensure we have a valid uiVariant
     if (!appearance.uiVariant) {

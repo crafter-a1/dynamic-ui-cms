@@ -10,7 +10,7 @@ import { FieldPreview } from "./FieldPreview";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { SaveIcon } from "lucide-react";
-import { validateUIVariant } from "@/utils/inputAdapters";
+import { validateUIVariant, normalizeAppearanceSettings } from "@/utils/inputAdapters";
 
 interface FieldAppearancePanelProps {
   fieldType: string | null;
@@ -32,51 +32,19 @@ export function FieldAppearancePanel({
   const defaultUIVariant = validateUIVariant(initialData?.uiVariant);
 
   // State for appearance settings
-  const [settings, setSettings] = useState({
-    uiVariant: defaultUIVariant,
-    theme: initialData?.theme || 'classic',
-    colors: initialData?.colors || {
-      border: '#e2e8f0',
-      text: '#1e293b',
-      background: '#ffffff',
-      focus: '#3b82f6',
-      label: '#64748b'
-    },
-    customCSS: initialData?.customCSS || '',
-    isDarkMode: initialData?.isDarkMode || false,
-    textAlign: initialData?.textAlign || 'left',
-    labelPosition: initialData?.labelPosition || 'top',
-    labelWidth: initialData?.labelWidth || 30,
-    floatLabel: initialData?.floatLabel || false,
-    filled: initialData?.filled || false,
-    showBorder: initialData?.showBorder !== false,
-    showBackground: initialData?.showBackground || false,
-    roundedCorners: initialData?.roundedCorners || 'medium',
-    fieldSize: initialData?.fieldSize || 'medium',
-    labelSize: initialData?.labelSize || 'medium',
-    customCss: initialData?.customCss || '',
-    customClass: initialData?.customClass || '',
-    ...initialData
-  });
+  const [settings, setSettings] = useState(normalizeAppearanceSettings(initialData));
 
   console.log("Initial appearance data:", JSON.stringify(initialData, null, 2));
   console.log("Default UI variant set to:", defaultUIVariant);
+  console.log("Normalized settings:", JSON.stringify(settings, null, 2));
 
   // Update settings when initialData changes
   useEffect(() => {
     if (initialData) {
-      // Validate the UI variant
-      const validUIVariant = validateUIVariant(initialData?.uiVariant);
-      console.log(`Validated UI variant from initialData: ${validUIVariant}`);
-
-      setSettings(prevSettings => ({
-        ...prevSettings,
-        ...initialData,
-        uiVariant: validUIVariant,
-        colors: initialData?.colors || prevSettings.colors,
-        isDarkMode: initialData?.isDarkMode || prevSettings.isDarkMode
-      }));
-
+      const normalizedSettings = normalizeAppearanceSettings(initialData);
+      console.log("Normalized settings from initialData:", JSON.stringify(normalizedSettings, null, 2));
+      setSettings(normalizedSettings);
+      
       if (initialData.isDarkMode !== undefined) {
         setIsDarkMode(initialData.isDarkMode);
       }
@@ -100,19 +68,14 @@ export function FieldAppearancePanel({
     setIsSaving(true);
 
     try {
-      // Ensure uiVariant is included in the settings and is valid
-      const validUIVariant = validateUIVariant(settings.uiVariant);
+      // Ensure settings are properly normalized before saving
+      const normalizedSettings = normalizeAppearanceSettings(settings);
       
-      const settingsToSave = {
-        ...settings,
-        uiVariant: validUIVariant
-      };
-
-      console.log("Saving appearance settings:", settingsToSave);
-      console.log("UI Variant being saved:", validUIVariant);
+      console.log("Saving appearance settings:", normalizedSettings);
+      console.log("UI Variant being saved:", normalizedSettings.uiVariant);
 
       // Save settings to parent component
-      onSave(settingsToSave);
+      onSave(normalizedSettings);
 
       toast({
         title: "Appearance settings saved",

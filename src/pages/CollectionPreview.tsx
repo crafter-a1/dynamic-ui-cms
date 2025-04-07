@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { CollectionPreviewForm } from '@/components/collection-preview/CollectionPreviewForm';
 import { toast } from '@/hooks/use-toast';
 import { adaptFieldsForPreview } from '@/utils/fieldAdapters';
+import { getFieldsForCollection } from '@/services/CollectionService';
 
 export default function CollectionPreview() {
   const { collectionId } = useParams<{ collectionId: string }>();
@@ -26,34 +27,20 @@ export default function CollectionPreview() {
 
       setIsLoading(true);
       try {
-        // Simulate fetching fields from API
-        // In a real app, this would be an API call to get fields with their configurations
-        const storedFields = localStorage.getItem(`collection_${collectionId}_fields`);
+        // Fetch fields from the database using our service
+        const fetchedFields = await getFieldsForCollection(collectionId);
+        console.log("Loaded fields from database:", fetchedFields);
         
-        if (storedFields) {
-          try {
-            const parsedFields = JSON.parse(storedFields);
-            console.log("Loaded raw fields from storage:", parsedFields);
-            
-            // Process fields to ensure consistent structure
-            const adaptedFields = adaptFieldsForPreview(parsedFields);
-            console.log("Adapted fields for preview:", adaptedFields);
-            
-            // Log UI variants for debugging
-            adaptedFields.forEach(field => {
-              console.log(`Preview: Field ${field.name} appearance settings:`, JSON.stringify(field.appearance || {}, null, 2));
-            });
-            
-            setFields(adaptedFields);
-          } catch (parseError) {
-            console.error("Error parsing stored fields:", parseError);
-            setError(parseError instanceof Error ? parseError : new Error('Failed to parse stored fields'));
-          }
-        } else {
-          console.log("No stored fields found for collection:", collectionId);
-          // If no stored fields, we could fetch from a default source
-          setFields([]);
-        }
+        // Process fields to ensure consistent structure
+        const adaptedFields = adaptFieldsForPreview(fetchedFields);
+        console.log("Adapted fields for preview:", adaptedFields);
+        
+        // Log UI variants for debugging
+        adaptedFields.forEach(field => {
+          console.log(`Preview: Field ${field.name} appearance settings:`, JSON.stringify(field.appearance || {}, null, 2));
+        });
+        
+        setFields(adaptedFields);
       } catch (err) {
         console.error("Error loading collection fields:", err);
         setError(err instanceof Error ? err : new Error('Failed to load collection fields'));
@@ -62,6 +49,20 @@ export default function CollectionPreview() {
           description: "There was a problem loading the collection fields",
           variant: "destructive"
         });
+        
+        // Fallback to localStorage if database fetch fails
+        try {
+          const storedFields = localStorage.getItem(`collection_${collectionId}_fields`);
+          if (storedFields) {
+            const parsedFields = JSON.parse(storedFields);
+            console.log("Falling back to stored fields from localStorage:", parsedFields);
+            
+            const adaptedFields = adaptFieldsForPreview(parsedFields);
+            setFields(adaptedFields);
+          }
+        } catch (storageErr) {
+          console.error("Error loading from localStorage:", storageErr);
+        }
       } finally {
         setIsLoading(false);
       }
