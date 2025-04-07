@@ -29,15 +29,15 @@ export default function CollectionPreview() {
       try {
         // Fetch fields from the database using our service
         const fetchedFields = await getFieldsForCollection(collectionId);
-        console.log("Loaded fields from database:", fetchedFields);
+        console.log("Loaded fields from database:", JSON.stringify(fetchedFields, null, 2));
         
         // Process fields to ensure consistent structure
         const adaptedFields = adaptFieldsForPreview(fetchedFields);
-        console.log("Adapted fields for preview:", adaptedFields);
+        console.log("Adapted fields for preview:", JSON.stringify(adaptedFields, null, 2));
         
         // Log UI variants for debugging
         adaptedFields.forEach(field => {
-          console.log(`Preview: Field ${field.name} appearance settings:`, JSON.stringify(field.appearance || {}, null, 2));
+          console.log(`Preview: Field ${field.name} UI variant:`, field.appearance?.uiVariant);
         });
         
         setFields(adaptedFields);

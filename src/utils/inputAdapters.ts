@@ -1,3 +1,4 @@
+
 /**
  * Creates a function that accepts a React.ChangeEvent<HTMLInputElement> and calls the provided setter with the input value
  * @param setter - A state setter function that accepts a string value
@@ -17,8 +18,17 @@ export const adaptInputChangeEvent = (setter: (value: string) => void) => {
 export const validateUIVariant = (variant: any): "standard" | "material" | "pill" | "borderless" | "underlined" => {
   const validVariants = ["standard", "material", "pill", "borderless", "underlined"];
   
-  if (typeof variant === 'string' && validVariants.includes(variant.toLowerCase())) {
-    const normalizedVariant = variant.toLowerCase() as "standard" | "material" | "pill" | "borderless" | "underlined";
+  // If variant is undefined or null, return the default
+  if (variant === undefined || variant === null) {
+    console.log("No UI variant provided, defaulting to 'standard'");
+    return "standard";
+  }
+  
+  // Normalize the variant to a string and lowercase
+  const variantStr = String(variant).toLowerCase();
+  
+  if (validVariants.includes(variantStr)) {
+    const normalizedVariant = variantStr as "standard" | "material" | "pill" | "borderless" | "underlined";
     console.log(`Validated UI variant: ${normalizedVariant}`);
     return normalizedVariant;
   }
@@ -36,8 +46,11 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
   // Ensure we're working with an object
   const settings = typeof appearance === 'object' && appearance !== null ? appearance : {};
   
-  // Validate and normalize UI variant
+  // Validate and normalize UI variant - ensure we always have a valid value
   const uiVariant = validateUIVariant(settings.uiVariant || settings.uiVariation);
+  
+  // Log the normalized UI variant for debugging
+  console.log(`Normalized UI variant: ${uiVariant}`);
   
   return {
     uiVariant,

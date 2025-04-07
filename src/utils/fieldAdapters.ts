@@ -88,8 +88,22 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
   return fields.map(field => {
     const apiId = field.api_id || field.apiId || field.name?.toLowerCase().replace(/\s+/g, '_');
 
-    // Consistently extract appearance settings from settings.appearance
+    // Extract appearance settings more consistently, prioritizing settings.appearance
     const appearance = field.settings?.appearance || field.appearance || {};
+    
+    // Make sure UI variant is always validated
+    if (!appearance.uiVariant) {
+      console.log(`Field ${field.name} is missing uiVariant, setting to default`);
+      appearance.uiVariant = 'standard';
+    } else {
+      console.log(`Field ${field.name} has uiVariant: ${appearance.uiVariant}`);
+    }
+    
+    // Normalize appearance settings to ensure consistent format
+    const normalizedAppearance = {
+      ...appearance,
+      uiVariant: appearance.uiVariant
+    };
     
     // Extract additional UI options
     const ui_options = field.settings?.ui_options || field.ui_options || {};
@@ -100,26 +114,11 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     // Extract advanced settings
     const advanced = field.settings?.advanced || field.advanced || {};
 
-    // Ensure we have a valid uiVariant
-    if (!appearance.uiVariant) {
-      appearance.uiVariant = 'standard';
-    }
-    
-    console.log(`Extracted appearance settings for field ${field.name}:`, JSON.stringify(appearance, null, 2));
-    console.log(`UI Variant for field ${field.name}:`, appearance.uiVariant);
+    // Debug logging for appearance settings
+    console.log(`Processed appearance for ${field.name}:`, JSON.stringify(normalizedAppearance, null, 2));
 
     // Get placeholder with consistent fallback
     let placeholder = ui_options.placeholder || field.placeholder || `Enter ${field.name}...`;
-    console.log(`Using placeholder for ${field.name}:`, placeholder);
-
-    // Debug logging
-    console.log('Field data processed for preview:', {
-      fieldName: field.name,
-      fieldType: field.type,
-      settings: field.settings,
-      appearance,
-      placeholder
-    });
 
     return {
       id: field.id,
@@ -131,7 +130,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       placeholder: placeholder,
       ui_options: ui_options,
       validation: validation,
-      appearance: appearance,
+      appearance: normalizedAppearance,
       advanced: advanced,
       options: field.options || [],
       min: validation?.min !== undefined ? validation.min : (field.min !== undefined ? field.min : undefined),

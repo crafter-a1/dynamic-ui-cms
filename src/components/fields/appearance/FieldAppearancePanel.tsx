@@ -43,6 +43,7 @@ export function FieldAppearancePanel({
     if (initialData) {
       const normalizedSettings = normalizeAppearanceSettings(initialData);
       console.log("Normalized settings from initialData:", JSON.stringify(normalizedSettings, null, 2));
+      console.log("UI Variant after normalization:", normalizedSettings.uiVariant);
       setSettings(normalizedSettings);
       
       if (initialData.isDarkMode !== undefined) {
@@ -54,12 +55,18 @@ export function FieldAppearancePanel({
   // Update settings and save to parent
   const updateSettings = (newSettings: Partial<typeof settings>) => {
     const updatedSettings = { ...settings, ...newSettings };
+    
+    // Ensure UI variant is always valid
+    if (newSettings.uiVariant) {
+      updatedSettings.uiVariant = validateUIVariant(newSettings.uiVariant);
+    }
+    
     setSettings(updatedSettings);
 
     console.log("Updated appearance settings:", updatedSettings);
     // Ensure uiVariant is explicitly logged
     if (newSettings.uiVariant) {
-      console.log("UI Variant updated to:", newSettings.uiVariant);
+      console.log("UI Variant updated to:", updatedSettings.uiVariant);
     }
   };
 
