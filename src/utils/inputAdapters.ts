@@ -1,6 +1,12 @@
-
-export const adaptInputChangeEvent = (event: React.ChangeEvent<HTMLInputElement>) => {
-  return event.target.value;
+/**
+ * Creates a function that accepts a React.ChangeEvent<HTMLInputElement> and calls the provided setter with the input value
+ * @param setter - A state setter function that accepts a string value
+ * @returns A function that handles React onChange events and passes the value to the setter
+ */
+export const adaptInputChangeEvent = (setter: (value: string) => void) => {
+  return (event: React.ChangeEvent<HTMLInputElement>) => {
+    setter(event.target.value);
+  };
 };
 
 /**

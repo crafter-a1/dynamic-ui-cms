@@ -8,6 +8,21 @@ import { Badge } from '@/components/ui/badge';
 import { PlusCircle, Search, Filter, LayoutGrid, List } from 'lucide-react';
 import { CreateComponentDrawer } from './CreateComponentDrawer';
 
+// Define interface for component
+interface Component {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  lastUpdated: string;
+  fields: number;
+}
+
+// Define interface for ComponentsPanel props
+interface ComponentsPanelProps {
+  collections?: any[]; // Make collections optional to support both use cases
+}
+
 // Mock components data
 const mockComponents = [
   {
@@ -44,7 +59,7 @@ const mockComponents = [
   }
 ];
 
-export const ComponentsPanel = () => {
+export const ComponentsPanel: React.FC<ComponentsPanelProps> = ({ collections }) => {
   const navigate = useNavigate();
   const [components] = useState(mockComponents);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +75,10 @@ export const ComponentsPanel = () => {
   const handleComponentClick = (componentId: string) => {
     navigate(`/components/${componentId}`);
   };
+  
+  // If collections are provided, we could use them here
+  // This is just to show we're handling the collections prop
+  console.log("Collections received:", collections);
   
   return (
     <div className="space-y-6">

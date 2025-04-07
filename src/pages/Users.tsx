@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { InputTextField } from '@/components/fields/inputs/InputTextField';
 import { toast } from '@/hooks/use-toast';
-import { adaptInputChangeEvent } from '@/utils/inputAdapters';
 
 export default function Users() {
   const [firstName, setFirstName] = useState('');
@@ -23,6 +22,14 @@ export default function Users() {
     });
   };
 
+  // Create properly typed change handlers for each field
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value);
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value);
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value);
+  const handleBioChange = (e: React.ChangeEvent<HTMLInputElement>) => setBio(e.target.value);
+
   return (
     <MainLayout>
       <div className="container mx-auto py-10">
@@ -37,39 +44,39 @@ export default function Users() {
                 id="firstName"
                 label="First Name"
                 value={firstName}
-                onChange={adaptInputChangeEvent(setFirstName)}
+                onChange={handleFirstNameChange}
               />
               <InputTextField
                 id="lastName"
                 label="Last Name"
                 value={lastName}
-                onChange={adaptInputChangeEvent(setLastName)}
+                onChange={handleLastNameChange}
               />
             </div>
             <InputTextField
               id="email"
               label="Email"
               value={email}
-              onChange={adaptInputChangeEvent(setEmail)}
+              onChange={handleEmailChange}
             />
             <InputTextField
               id="username"
               label="Username"
               value={username}
-              onChange={adaptInputChangeEvent(setUsername)}
+              onChange={handleUsernameChange}
             />
             <InputTextField
               id="phoneNumber"
               label="Phone Number"
               value={phoneNumber}
-              onChange={adaptInputChangeEvent(setPhoneNumber)}
+              onChange={handlePhoneNumberChange}
               keyFilter="numbers"
             />
             <InputTextField
               id="bio"
               label="Bio"
               value={bio}
-              onChange={adaptInputChangeEvent(setBio)}
+              onChange={handleBioChange}
             />
           </CardContent>
           <CardFooter className="flex justify-end items-center">
