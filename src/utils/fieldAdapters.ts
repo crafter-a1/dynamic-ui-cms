@@ -87,7 +87,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
 
   return fields.map(field => {
     const apiId = field.api_id || field.apiId || field.name?.toLowerCase().replace(/\s+/g, '_');
-
+    
     // Extract appearance settings more consistently, prioritizing settings.appearance
     const appearance = field.settings?.appearance || field.appearance || {};
     
@@ -104,6 +104,57 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       ...appearance,
       uiVariant: appearance.uiVariant
     };
+    
+    // Extract field-specific settings based on field type
+    let fieldSpecificSettings = {};
+    
+    switch (field.type) {
+      case 'number':
+        fieldSpecificSettings = {
+          min: field.settings?.min !== undefined ? field.settings.min : field.min,
+          max: field.settings?.max !== undefined ? field.settings.max : field.max,
+          step: field.settings?.step || field.step || 1,
+          prefix: field.settings?.prefix || field.prefix || '',
+          suffix: field.settings?.suffix || field.suffix || '',
+          showButtons: field.settings?.showButtons || field.showButtons || false,
+          buttonLayout: field.settings?.buttonLayout || field.buttonLayout || 'horizontal',
+          currency: field.settings?.currency || field.currency || 'USD',
+          locale: field.settings?.locale || field.locale || 'en-US'
+        };
+        break;
+        
+      case 'textarea':
+      case 'markdown':
+        fieldSpecificSettings = {
+          rows: field.settings?.rows || field.rows || 5
+        };
+        break;
+      
+      case 'mask':
+        fieldSpecificSettings = {
+          mask: field.settings?.mask || field.mask || ''
+        };
+        break;
+        
+      case 'tags':
+        fieldSpecificSettings = {
+          maxTags: field.settings?.maxTags || field.maxTags || 10
+        };
+        break;
+        
+      case 'color':
+        fieldSpecificSettings = {
+          showAlpha: field.settings?.showAlpha || field.showAlpha || false,
+          defaultFormat: field.settings?.defaultFormat || field.defaultFormat || 'hex'
+        };
+        break;
+        
+      case 'otp':
+        fieldSpecificSettings = {
+          length: field.settings?.length || field.length || 6
+        };
+        break;
+    }
     
     // Extract additional UI options
     const ui_options = field.settings?.ui_options || field.ui_options || {};
@@ -131,17 +182,13 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       ui_options: ui_options,
       validation: validation,
       appearance: normalizedAppearance,
-      advanced: advanced,
+      advanced: {
+        ...advanced,
+        ...fieldSpecificSettings
+      },
       options: field.options || [],
-      min: validation?.min !== undefined ? validation.min : (field.min !== undefined ? field.min : undefined),
-      max: validation?.max !== undefined ? validation.max : (field.max !== undefined ? field.max : undefined),
-      maxTags: advanced?.maxTags || 10,
-      mask: advanced?.mask || field.mask,
-      keyFilter: validation?.keyFilter || field.keyFilter,
-      length: advanced?.length || 6,  // For OTP input
-      rows: advanced?.rows || 10,     // For textarea/markdown
-      prefix: advanced?.prefix || field.prefix,
-      suffix: advanced?.suffix || field.suffix,
+      // Include field-specific properties for backward compatibility
+      ...fieldSpecificSettings
     };
   });
 }

@@ -31,13 +31,16 @@ export default function CollectionPreview() {
         const fetchedFields = await getFieldsForCollection(collectionId);
         console.log("Loaded fields from database:", JSON.stringify(fetchedFields, null, 2));
         
-        // Process fields to ensure consistent structure
+        // Process fields to ensure consistent structure with field-specific settings
         const adaptedFields = adaptFieldsForPreview(fetchedFields);
         console.log("Adapted fields for preview:", JSON.stringify(adaptedFields, null, 2));
         
-        // Log UI variants for debugging
+        // Log field types and their specific settings for debugging
         adaptedFields.forEach(field => {
-          console.log(`Preview: Field ${field.name} UI variant:`, field.appearance?.uiVariant);
+          console.log(`Preview: Field ${field.name} (${field.type}) UI variant:`, field.appearance?.uiVariant);
+          if (field.advanced) {
+            console.log(`Preview: Field ${field.name} advanced settings:`, JSON.stringify(field.advanced, null, 2));
+          }
         });
         
         setFields(adaptedFields);

@@ -82,3 +82,88 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
     }
   };
 };
+
+/**
+ * Normalizes and validates field-specific settings based on field type
+ * @param fieldType The type of field
+ * @param settings The settings to normalize
+ * @returns Normalized field-specific settings
+ */
+export const normalizeFieldSpecificSettings = (fieldType: string, settings: any = {}): Record<string, any> => {
+  const normalizedSettings: Record<string, any> = {};
+  
+  switch (fieldType.toLowerCase()) {
+    case 'number':
+      return {
+        min: settings.min !== undefined ? Number(settings.min) : undefined,
+        max: settings.max !== undefined ? Number(settings.max) : undefined,
+        step: settings.step !== undefined ? Number(settings.step) : 1,
+        prefix: settings.prefix || '',
+        suffix: settings.suffix || '',
+        showButtons: !!settings.showButtons,
+        buttonLayout: ['horizontal', 'vertical'].includes(settings.buttonLayout) ? settings.buttonLayout : 'horizontal',
+        currency: settings.currency || 'USD',
+        locale: settings.locale || 'en-US',
+      };
+      
+    case 'text':
+    case 'password':
+      return {
+        keyFilter: settings.keyFilter || 'none',
+        maxLength: settings.maxLength ? Number(settings.maxLength) : undefined,
+        minLength: settings.minLength ? Number(settings.minLength) : undefined,
+        mask: settings.mask || '',
+      };
+      
+    case 'textarea':
+    case 'markdown':
+      return {
+        rows: settings.rows ? Number(settings.rows) : 5,
+        minLength: settings.minLength ? Number(settings.minLength) : undefined,
+        maxLength: settings.maxLength ? Number(settings.maxLength) : undefined,
+      };
+      
+    case 'wysiwyg':
+    case 'blockeditor':
+      return {
+        minHeight: settings.minHeight || '200px',
+        toolbar: settings.toolbar || ['basic'],
+      };
+      
+    case 'tags':
+      return {
+        maxTags: settings.maxTags ? Number(settings.maxTags) : 10,
+        duplicates: !!settings.allowDuplicates,
+        transform: settings.transform || 'none', // none, lowercase, uppercase
+      };
+      
+    case 'mask':
+      return {
+        mask: settings.mask || '',
+        placeholder: settings.placeholder || '',
+      };
+      
+    case 'slug':
+      return {
+        prefix: settings.prefix || '',
+        suffix: settings.suffix || '',
+        separator: settings.separator || '-',
+      };
+      
+    case 'otp':
+      return {
+        length: settings.length ? Number(settings.length) : 6,
+        type: ['numeric', 'alphanumeric'].includes(settings.type) ? settings.type : 'numeric',
+      };
+      
+    case 'color':
+      return {
+        showAlpha: !!settings.showAlpha,
+        presets: Array.isArray(settings.presets) ? settings.presets : [],
+        defaultFormat: ['hex', 'rgb', 'hsl'].includes(settings.defaultFormat) ? settings.defaultFormat : 'hex',
+      };
+      
+    default:
+      return normalizedSettings;
+  }
+};

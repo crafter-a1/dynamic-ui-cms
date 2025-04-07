@@ -78,6 +78,59 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
     `ui-variant-${uiVariant}`
   );
 
+  const getFieldSpecificProps = () => {
+    switch (field.type) {
+      case "number":
+        return {
+          min: field.min !== undefined ? field.min : (field.validation?.min !== undefined ? field.validation.min : undefined),
+          max: field.max !== undefined ? field.max : (field.validation?.max !== undefined ? field.validation.max : undefined),
+          step: field.step || advanced.step || 1,
+          prefix: advanced.prefix || field.prefix || "",
+          suffix: advanced.suffix || field.suffix || "",
+          showButtons: advanced.showButtons || false,
+          buttonLayout: advanced.buttonLayout || "horizontal",
+          currency: advanced.currency || field.currency || "USD",
+          locale: advanced.locale || field.locale || "en-US"
+        };
+      case "mask":
+        return {
+          mask: advanced.mask || field.mask || ""
+        };
+      case "tags":
+        return {
+          maxTags: advanced.maxTags || field.maxTags || 10
+        };
+      case "slug":
+        return {
+          prefix: advanced.prefix || field.prefix || "",
+          suffix: advanced.suffix || field.suffix || ""
+        };
+      case "otp":
+        return {
+          length: advanced.length || field.length || 6
+        };
+      case "textarea":
+        return {
+          rows: advanced.rows || field.rows || 3
+        };
+      case "markdown":
+      case "wysiwyg":
+      case "blockeditor":
+        return {
+          minHeight: advanced.minHeight || field.minHeight || "200px",
+          rows: advanced.rows || field.rows || 10
+        };
+      case "color":
+        return {
+          showAlpha: advanced.showAlpha || field.showAlpha || false
+        };
+      default:
+        return {};
+    }
+  };
+
+  const fieldSpecificProps = getFieldSpecificProps();
+
   switch (field.type) {
     case "text":
       return (
@@ -114,17 +167,18 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           label={fieldName}
           value={value !== undefined && value !== "" ? value : null}
           onChange={(newValue) => onInputChange(fieldId, newValue)}
-          min={field.min}
-          max={field.max}
+          min={fieldSpecificProps.min}
+          max={fieldSpecificProps.max}
+          step={fieldSpecificProps.step}
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
           floatLabel={floatLabel}
           filled={filled}
-          showButtons={advanced.showButtons || false}
-          buttonLayout={advanced.buttonLayout || "horizontal"}
-          prefix={advanced.prefix || ""}
-          suffix={advanced.suffix || ""}
+          showButtons={fieldSpecificProps.showButtons}
+          buttonLayout={fieldSpecificProps.buttonLayout}
+          prefix={fieldSpecificProps.prefix}
+          suffix={fieldSpecificProps.suffix}
           textAlign={textAlign}
           labelPosition={labelPosition}
           labelWidth={labelWidth}
@@ -176,7 +230,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
             onChange={(e) => onInputChange(fieldId, e.target.value)}
             placeholder={placeholder}
             required={required}
-            rows={field.rows || 3}
+            rows={fieldSpecificProps.rows}
           />
           {(helpText || hasError) && (
             <p className={cn("text-sm mt-1", hasError ? "text-destructive" : "text-gray-500")}>
@@ -196,7 +250,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
-          rows={field.rows || 3}
+          rows={fieldSpecificProps.rows}
           className={fieldClassName}
         />
       );
@@ -211,7 +265,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
-          minHeight={field.minHeight || "200px"}
+          minHeight={fieldSpecificProps.minHeight}
           className={fieldClassName}
           uiVariant={uiVariant as "standard" | "material" | "pill" | "borderless" | "underlined"}
           colors={colors}
@@ -230,7 +284,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
-          minHeight={field.minHeight || "200px"}
+          minHeight={fieldSpecificProps.minHeight}
           className={fieldClassName}
         />
       );
@@ -455,6 +509,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           onChange={(newValue) => onInputChange(fieldId, newValue)}
           helpText={hasError ? errorMessage : helpText}
           className={fieldClassName}
+          showAlpha={fieldSpecificProps.showAlpha}
         />
       );
 
@@ -468,8 +523,8 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
-          prefix={field.prefix || ""}
-          suffix={field.suffix || ""}
+          prefix={fieldSpecificProps.prefix}
+          suffix={fieldSpecificProps.suffix}
           className={fieldClassName}
         />
       );
@@ -484,7 +539,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
-          maxTags={field.maxTags || 10}
+          maxTags={fieldSpecificProps.maxTags}
           className={fieldClassName}
         />
       );
@@ -499,7 +554,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           placeholder={placeholder}
           required={required}
           helpText={hasError ? errorMessage : helpText}
-          mask={field.mask || ""}
+          mask={fieldSpecificProps.mask}
           className={fieldClassName}
         />
       );
@@ -511,7 +566,7 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
           label={fieldName}
           value={value || ""}
           onChange={(newValue) => onInputChange(fieldId, newValue)}
-          length={field.length || 6}
+          length={fieldSpecificProps.length}
           helpText={hasError ? errorMessage : helpText}
           className={fieldClassName}
         />
