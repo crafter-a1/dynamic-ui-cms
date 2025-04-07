@@ -84,3 +84,12 @@ export function formatNumberWithSettings(
   
   return formattedValue;
 }
+
+/**
+ * Adapter to convert React.ChangeEvent to the expected string value for InputTextField
+ */
+export function adaptInputChangeEvent(setter: (value: string) => void) {
+  return (e: React.ChangeEvent<HTMLInputElement>) => {
+    setter(e.target.value);
+  };
+}

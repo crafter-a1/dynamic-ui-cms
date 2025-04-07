@@ -1,14 +1,9 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
-import { Code, Eye, Maximize2, SplitSquareVertical } from "lucide-react";
-import { toast } from "sonner";
-import Editor from '@monaco-editor/react';
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Code, Eye, Maximize2 } from "lucide-react";
 
 interface CustomCSSTabProps {
   settings: any;
@@ -16,454 +11,253 @@ interface CustomCSSTabProps {
 }
 
 export function CustomCSSTab({ settings, onUpdate }: CustomCSSTabProps) {
-  const [activeSubTab, setActiveSubTab] = useState('code');
-  const [fullScreenMode, setFullScreenMode] = useState(false);
-  const [splitViewMode, setSplitViewMode] = useState(false);
-  const [cssValue, setCssValue] = useState(settings.customCSS || '');
-  const [previewStyle, setPreviewStyle] = useState<React.CSSProperties>({});
-  const [fieldPreview, setFieldPreview] = useState<any>({
-    style: {},
-    state: 'default'
-  });
+  const [cssMode, setCssMode] = useState<'code' | 'visual'>('code');
+  const [isSplitView, setIsSplitView] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [customCSS, setCustomCSS] = useState(settings.customCSS || '');
   
-  const [cssSnippets] = useState([
-    { name: 'Focus Glow Effect', css: 'box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);' },
-    { name: 'Smooth Hover Transition', css: 'transition: all 0.2s ease-in-out;' },
-    { name: 'Material Design Ripple', css: 'position: relative; overflow: hidden;' },
-    { name: 'Subtle Inner Shadow', css: 'box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);' },
-    { name: 'Modern Border Radius', css: 'border-radius: 8px;' },
-  ]);
-  
-  useEffect(() => {
-    // Apply initial CSS from settings
-    setCssValue(settings.customCSS || '');
-    applyCustomCSS(settings.customCSS || '');
-  }, [settings.customCSS]);
-  
-  const updateCustomCSS = (css: string) => {
-    setCssValue(css);
-    applyCustomCSS(css);
-    onUpdate({ customCSS: css });
-  };
-  
-  const addCssSnippet = (snippet: string) => {
-    const currentCSS = cssValue || '';
-    const updatedCSS = currentCSS + (currentCSS ? '\n' : '') + snippet;
-    updateCustomCSS(updatedCSS);
-  };
-  
-  const formatCSS = () => {
-    try {
-      // Simple CSS formatter
-      const formattedCSS = cssValue
-        .split(';')
-        .filter((line: string) => line.trim() !== '')
-        .map((line: string) => `${line.trim()};`)
-        .join('\n');
-      
-      updateCustomCSS(formattedCSS);
-      toast.success("CSS formatted successfully");
-    } catch (e) {
-      console.error('Error formatting CSS:', e);
-      toast.error("Error formatting CSS");
+  const cssSnippets = [
+    {
+      name: "Focus Glow Effect",
+      value: `box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);\noutline: none;`
+    },
+    {
+      name: "Smooth Hover Transition",
+      value: `transition: all 0.2s ease-in-out;\n`
+    },
+    {
+      name: "Material Design Ripple",
+      value: `position: relative;\noverflow: hidden;\n&::after {\n  content: '';\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  width: 5px;\n  height: 5px;\n  background: rgba(255, 255, 255, 0.5);\n  opacity: 0;\n  border-radius: 100%;\n  transform: scale(1, 1) translate(-50%);\n  transform-origin: 50% 50%;\n}\n&:focus:not(:active)::after {\n  animation: ripple 1s ease-out;\n}\n@keyframes ripple {\n  0% {\n    transform: scale(0, 0);\n    opacity: 1;\n  }\n  20% {\n    transform: scale(25, 25);\n    opacity: 1;\n  }\n  100% {\n    opacity: 0;\n    transform: scale(40, 40);\n  }\n}`
+    },
+    {
+      name: "Subtle Inner Shadow",
+      value: `box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);`
+    },
+    {
+      name: "Modern Border Radius",
+      value: `border-radius: 0.5rem;\noverflow: hidden;`
     }
+  ];
+  
+  const handleApplySnippet = (snippetValue: string) => {
+    const newCSS = customCSS + (customCSS ? '\n' : '') + snippetValue;
+    setCustomCSS(newCSS);
+    handleCustomCSSChange(newCSS);
   };
   
-  const resetCSS = () => {
-    updateCustomCSS('');
-    toast.success("CSS reset to default");
+  const handleCustomCSSChange = (value: string) => {
+    setCustomCSS(value);
+    onUpdate({
+      ...settings,
+      customCSS: value
+    });
   };
-
-  const handlePreviewStateChange = (state: string) => {
-    setFieldPreview(prev => ({
-      ...prev,
-      state
-    }));
-  };
-
-  const saveAsSnippet = () => {
-    toast.success("Snippet saved successfully");
-  };
-
-  const applyCustomCSS = (css: string) => {
+  
+  const handleFormatCode = () => {
     try {
-      // Convert CSS string to style object
-      const cssObj: any = {};
-      const cssProperties = css.split(';').filter(prop => prop.trim() !== '');
-      
-      cssProperties.forEach(property => {
-        const [key, value] = property.split(':').map(part => part.trim());
-        if (key && value) {
-          // Convert kebab-case to camelCase
-          const camelKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-          cssObj[camelKey] = value;
-        }
-      });
-      
-      setPreviewStyle(cssObj);
+      // Basic CSS formatting (simple version)
+      const formattedCSS = customCSS
+        .replace(/\s*{\s*/g, ' {\n  ')
+        .replace(/\s*;\s*/g, ';\n  ')
+        .replace(/\s*}\s*/g, '\n}\n')
+        .replace(/\n\s*\n/g, '\n');
+        
+      setCustomCSS(formattedCSS);
+      handleCustomCSSChange(formattedCSS);
     } catch (error) {
-      console.error('Error applying CSS:', error);
-      toast.error("Invalid CSS");
+      console.error('Error formatting CSS:', error);
     }
   };
-
-  const validateCSS = () => {
-    // Simple validation - in a real implementation, this would be more robust
-    try {
-      const testElement = document.createElement('div');
-      testElement.style.cssText = cssValue;
-      toast.success("CSS is valid");
-      return true;
-    } catch (e) {
-      console.error('Invalid CSS:', e);
-      toast.error("Invalid CSS");
-      return false;
-    }
+  
+  const handleResetCSS = () => {
+    setCustomCSS('');
+    handleCustomCSSChange('');
   };
-
-  // Handle Monaco Editor changes
-  const handleEditorChange = (value: string | undefined) => {
-    if (value !== undefined) {
-      updateCustomCSS(value);
-    }
-  };
-
+  
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Preview</h3>
-        <div className="flex items-center space-x-2">
-          <div className="flex border rounded-md overflow-hidden">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn("rounded-r-none", fieldPreview.state === 'default' && "bg-gray-200")}
-              onClick={() => handlePreviewStateChange('default')}
-            >
-              Default
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn("rounded-none border-x border-gray-200", fieldPreview.state === 'hover' && "bg-gray-200")}
-              onClick={() => handlePreviewStateChange('hover')}
-            >
-              Hover
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn("rounded-none border-r border-gray-200", fieldPreview.state === 'focus' && "bg-gray-200")}
-              onClick={() => handlePreviewStateChange('focus')}
-            >
-              Focus
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn("rounded-none border-r border-gray-200", fieldPreview.state === 'disabled' && "bg-gray-200")}
-              onClick={() => handlePreviewStateChange('disabled')}
-            >
-              Disabled
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={cn("rounded-l-none", fieldPreview.state === 'error' && "bg-gray-200")}
-              onClick={() => handlePreviewStateChange('error')}
-            >
-              Error
-            </Button>
-          </div>
+    <div className={`space-y-6 ${isFullScreen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900 p-6' : ''}`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-medium">Custom CSS</h3>
+          <p className="text-sm text-gray-500">
+            Add custom CSS to style your field
+          </p>
         </div>
-      </div>
-
-      {/* Live Preview of CSS */}
-      <Card className="border rounded-md overflow-hidden">
-        <CardContent className="p-6">
-          <div className="mb-6">
-            <Label className="block mb-2">Field Label</Label>
-            <div 
-              className={cn(
-                "border rounded-md px-4 py-2 w-full", 
-                fieldPreview.state === 'error' && "border-red-500",
-                fieldPreview.state === 'focus' && "ring-2 ring-blue-500 ring-opacity-50",
-                fieldPreview.state === 'disabled' && "bg-gray-100 opacity-70"
-              )}
-              style={previewStyle}
-            >
-              <Input 
-                placeholder="Field placeholder" 
-                className="border-0 p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                disabled={fieldPreview.state === 'disabled'}
-              />
-            </div>
-            {fieldPreview.state === 'error' && (
-              <p className="text-sm text-red-500 mt-1">This field has an error</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Custom CSS</h3>
-        <div className="flex space-x-2">
-          <Button 
-            size="sm" 
+        
+        <div className="flex items-center gap-2">
+          <Button
             variant="outline"
-            onClick={formatCSS}
+            size="sm"
+            className="gap-1"
+            onClick={handleFormatCode}
           >
             Format Code
           </Button>
-          <Button 
-            size="sm" 
+          <Button
             variant="outline"
-            onClick={resetCSS}
+            size="sm"
+            className="gap-1"
+            onClick={handleResetCSS}
           >
             Reset to Default
           </Button>
         </div>
       </div>
       
-      <div className="border rounded-md overflow-hidden">
-        <div className="bg-gray-100 dark:bg-gray-800 p-3 border-b flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn("h-8 px-3 flex items-center gap-1", activeSubTab === 'code' && "bg-white shadow-sm")}
-              onClick={() => setActiveSubTab('code')}
-            >
-              <Code className="h-4 w-4 mr-1" />
+      <div className="flex items-center justify-between border rounded-t-md p-2 bg-gray-50 dark:bg-gray-800">
+        <Tabs value={cssMode} onValueChange={(value: string) => setCssMode(value as 'code' | 'visual')}>
+          <TabsList className="grid w-60 grid-cols-2">
+            <TabsTrigger value="code" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
               Code
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn("h-8 px-3 flex items-center gap-1", activeSubTab === 'visual' && "bg-white shadow-sm")}
-              onClick={() => setActiveSubTab('visual')}
-            >
-              <Eye className="h-4 w-4 mr-1" />
+            </TabsTrigger>
+            <TabsTrigger value="visual" className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
               Visual
-            </Button>
-          </div>
-          
-          <div className="flex space-x-2">
-            <Button 
-              size="sm" 
-              variant="ghost"
-              className="h-8 px-3 flex items-center gap-1"
-              onClick={() => setSplitViewMode(!splitViewMode)}
-            >
-              <SplitSquareVertical className="h-4 w-4" />
-              Split View
-            </Button>
-            <Button 
-              size="sm" 
-              variant="ghost"
-              className="h-8 px-3 flex items-center gap-1"
-              onClick={() => setFullScreenMode(!fullScreenMode)}
-            >
-              <Maximize2 className="h-4 w-4" />
-              Full Screen
-            </Button>
-          </div>
-        </div>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         
-        <div className={cn("grid", splitViewMode ? "grid-cols-2" : "grid-cols-1")}>
-          {(activeSubTab === 'code' || splitViewMode) && (
-            <div className={cn("m-0", splitViewMode && "border-r")}>
-              <div className="p-4">
-                <h4 className="font-medium mb-2">CSS Editor</h4>
-                <div className="h-64 border rounded-md overflow-hidden">
-                  <Editor
-                    height="100%"
-                    defaultLanguage="css"
-                    value={cssValue}
-                    onChange={handleEditorChange}
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      scrollBeyondLastLine: false,
-                      wordWrap: 'on',
-                      tabSize: 2,
-                      automaticLayout: true,
-                      lineNumbers: 'on',
-                      lineDecorationsWidth: 0,
-                      suggestOnTriggerCharacters: true,
-                      acceptSuggestionOnEnter: 'on',
-                      quickSuggestions: true
-                    }}
-                    className="border-0"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {(activeSubTab === 'visual' || splitViewMode) && (
-            <div className={cn("m-0", splitViewMode && "block")}>
-              <div className="p-4">
-                <h4 className="font-medium mb-4">Visual Property Editor</h4>
-                
-                {/* Visual Editor Controls */}
-                <div className="space-y-4">
-                  <div>
-                    <Label className="mb-1 block">Border Width</Label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {['0px', '1px', '2px', '4px'].map((width) => (
-                        <Button 
-                          key={width}
-                          variant="outline" 
-                          size="sm" 
-                          className={cn("text-xs", cssValue.includes(`border-width: ${width}`) && "bg-blue-50")}
-                          onClick={() => addCssSnippet(`border-width: ${width};`)}
-                        >{width}</Button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="mb-1 block">Border Radius</Label>
-                    <div className="grid grid-cols-5 gap-2">
-                      {['0px', '2px', '4px', '8px', '12px'].map((radius) => (
-                        <Button 
-                          key={radius}
-                          variant="outline" 
-                          size="sm" 
-                          className={cn("text-xs", cssValue.includes(`border-radius: ${radius}`) && "bg-blue-50")}
-                          onClick={() => addCssSnippet(`border-radius: ${radius};`)}
-                        >{radius}</Button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="mb-1 block">Border Style</Label>
-                    <div className="flex items-center gap-2">
-                      <select 
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                        onChange={(e) => addCssSnippet(`border-style: ${e.target.value};`)}
-                      >
-                        <option>solid</option>
-                        <option>dashed</option>
-                        <option>dotted</option>
-                        <option>double</option>
-                        <option>none</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="mb-1 block">Border Color</Label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        className="h-9 w-9 rounded-md border"
-                        onChange={(e) => addCssSnippet(`border-color: ${e.target.value};`)}
-                        defaultValue="#0066cc"
-                      />
-                      <Input 
-                        defaultValue="#0066cc" 
-                        className="font-mono"
-                        onChange={(e) => addCssSnippet(`border-color: ${e.target.value};`)}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="mb-1 block">Text Color</Label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        className="h-9 w-9 rounded-md border"
-                        onChange={(e) => addCssSnippet(`color: ${e.target.value};`)}
-                        defaultValue="#333333"
-                      />
-                      <Input 
-                        defaultValue="#333333" 
-                        className="font-mono"
-                        onChange={(e) => addCssSnippet(`color: ${e.target.value};`)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="mb-1 block">Background Color</Label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        className="h-9 w-9 rounded-md border"
-                        onChange={(e) => addCssSnippet(`background-color: ${e.target.value};`)}
-                        defaultValue="#ffffff"
-                      />
-                      <Input 
-                        defaultValue="#ffffff" 
-                        className="font-mono"
-                        onChange={(e) => addCssSnippet(`background-color: ${e.target.value};`)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <div className="border-t p-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h4 className="font-medium mb-2">CSS Snippets</h4>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {cssSnippets.map((snippet, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => addCssSnippet(snippet.css)}
-                  >
-                    {snippet.name}
-                  </Button>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs text-blue-600"
-                  onClick={saveAsSnippet}
-                >
-                  + Save Current as Snippet
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          {cssValue && (
-            <div className="flex items-center text-xs mt-2 text-amber-500">
-              <span className="mr-1">⚠️</span> Warning: Consider using a variable for consistent colors across the theme.
-            </div>
-          )}
-        </div>
-        
-        <div className="border-t p-4 bg-gray-50 dark:bg-gray-800 flex justify-end space-x-2">
-          <Button 
-            variant="outline"
-            onClick={validateCSS}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setIsSplitView(!isSplitView)}
           >
-            Validate
+            <div className="flex flex-col items-center justify-center h-4 w-4">
+              <div className="h-1.5 w-3.5 bg-current mb-0.5"></div>
+              <div className="h-1.5 w-3.5 bg-current"></div>
+            </div>
+            <span className="sr-only">Split View</span>
           </Button>
           <Button
-            onClick={() => onUpdate({ customCSS: cssValue })}
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setIsFullScreen(!isFullScreen)}
           >
-            Apply Changes
+            <Maximize2 className="h-4 w-4" />
+            <span className="sr-only">Full Screen</span>
           </Button>
         </div>
       </div>
+      
+      <div className="border rounded-b-md">
+        <div className="border-b p-2 bg-gray-50 dark:bg-gray-800">
+          <h4 className="text-sm font-medium">CSS Editor</h4>
+        </div>
+        <div className={isSplitView ? "grid grid-cols-2" : ""}>
+          <div className="p-0 relative">
+            <div className="absolute left-0 top-0 p-1 text-xs text-gray-400 w-6 text-right select-none">
+              {Array.from({ length: customCSS.split('\n').length || 1 }).map((_, i) => (
+                <div key={i} className="leading-6">{i + 1}</div>
+              ))}
+            </div>
+            <textarea
+              value={customCSS}
+              onChange={(e) => handleCustomCSSChange(e.target.value)}
+              className="font-mono text-sm w-full h-80 p-1 pl-8 border-0 focus:ring-0 resize-none"
+              placeholder="/* Add your custom CSS here */
+.my-field {
+  border-color: #3b82f6;
+  background-color: #f8fafc;
+}
+.my-field:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}"
+            />
+          </div>
+          
+          {isSplitView && (
+            <div className="border-l p-4">
+              <h4 className="text-sm font-medium mb-3">Preview</h4>
+              <div className="border rounded p-3">
+                <div className="mb-2 text-sm font-medium">Field Label</div>
+                <div 
+                  className="border rounded p-2 my-field" 
+                  style={{ ...cssStringToObject(customCSS) }}
+                >
+                  Field content
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium">CSS Snippets</h4>
+        <div className="flex flex-wrap gap-2">
+          {cssSnippets.map((snippet, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              size="sm"
+              onClick={() => handleApplySnippet(snippet.value)}
+            >
+              {snippet.name}
+            </Button>
+          ))}
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-dashed"
+          >
+            + Save Current as Snippet
+          </Button>
+        </div>
+      </div>
+      
+      <div className="flex justify-end pt-4">
+        <Button
+          onClick={() => {
+            // Validate CSS before applying
+            try {
+              onUpdate({
+                ...settings,
+                customCSS: customCSS
+              });
+            } catch (error) {
+              console.error('Error applying CSS changes:', error);
+            }
+          }}
+        >
+          Apply Changes
+        </Button>
+      </div>
     </div>
   );
+}
+
+// Helper function to convert CSS string to object (simple version)
+function cssStringToObject(cssString: string): React.CSSProperties {
+  const cssObj: Record<string, string> = {};
+  
+  try {
+    // Extract properties
+    const properties = cssString.match(/[^{}]+(?=\s*\{[^}]*\})/g);
+    const values = cssString.match(/\{([^}]+)\}/g);
+    
+    if (!properties || !values || properties.length === 0) return cssObj;
+    
+    // Get the first selector's properties
+    const styleValues = values[0].replace(/[{}]/g, '').trim();
+    
+    // Split into individual rules
+    const rules = styleValues.split(';');
+    
+    rules.forEach(rule => {
+      const [property, value] = rule.split(':').map(s => s.trim());
+      if (property && value) {
+        // Convert kebab-case to camelCase
+        const camelProperty = property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+        cssObj[camelProperty] = value;
+      }
+    });
+  } catch (e) {
+    console.error('Error parsing CSS:', e);
+  }
+  
+  return cssObj as React.CSSProperties;
 }

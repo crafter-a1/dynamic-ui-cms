@@ -3,6 +3,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom UI Variant Styles */
+.input-variant-pill {
+  border-radius: 9999px !important;
+}
+
+.input-variant-material {
+  border: none !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  border-radius: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.input-variant-borderless {
+  border: none !important;
+  background-color: rgba(241, 245, 249, 0.7) !important;
+}
+
+.input-variant-underlined {
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-radius: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background-color: transparent !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -64,17 +64,25 @@ export function UIVariantsTab({ settings, onUpdate }: UIVariantsTabProps) {
       )
     }
   ];
-  
+
+  // Ensure we have a valid UI variant or default to 'standard'
+  const currentVariant = settings.uiVariant || 'standard';
+  console.log(`Current UI variant in UIVariantsTab: ${currentVariant}`);
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium">UI Variants</h3>
       <p className="text-sm text-gray-500">
         Select a predefined style for your input field
       </p>
-      
+
       <RadioGroup
-        value={settings.uiVariant || 'standard'}
-        onValueChange={(value) => onUpdate({ uiVariant: value })}
+        value={currentVariant}
+        onValueChange={(value) => {
+          console.log('UI Variant selected:', value);
+          // Force update the uiVariant setting
+          onUpdate({ uiVariant: value });
+        }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"
       >
         {variants.map((variant) => (
@@ -88,7 +96,7 @@ export function UIVariantsTab({ settings, onUpdate }: UIVariantsTabProps) {
               htmlFor={`ui-variant-${variant.id}`}
               className={cn(
                 "cursor-pointer flex flex-col h-full border rounded-md p-4 hover:border-primary transition-colors",
-                settings.uiVariant === variant.id && "border-2 border-primary"
+                currentVariant === variant.id && "border-2 border-primary"
               )}
             >
               <span className="font-medium mb-2">{variant.name}</span>

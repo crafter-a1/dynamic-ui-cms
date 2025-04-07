@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Moon, Sun } from "lucide-react";
+import { validateUIVariant } from "@/utils/inputAdapters";
 
 interface FieldPreviewProps {
   fieldType: string | null;
@@ -21,8 +22,12 @@ export function FieldPreview({
   onPreviewStateChange,
   onDarkModeChange
 }: FieldPreviewProps) {
+  // Ensure we have a valid UI variant
+  const uiVariant = validateUIVariant(settings.uiVariant);
+  console.log(`UI Variant in FieldPreview: ${uiVariant}`);
+  
   const getPreviewStyle = () => {
-    const { colors, uiVariant, theme } = settings;
+    const { colors, theme } = settings;
     
     // Base styles
     let containerStyle: React.CSSProperties = {
@@ -48,7 +53,7 @@ export function FieldPreview({
       transition: 'all 0.2s ease'
     };
     
-    // Apply UI variant styles
+    // Apply UI variant styles based on the validated uiVariant
     switch (uiVariant) {
       case 'standard':
         inputStyle = {
@@ -91,6 +96,13 @@ export function FieldPreview({
           backgroundColor: 'transparent',
         };
         break;
+      default:
+        console.warn(`Unknown UI variant: ${uiVariant}, using standard`);
+        // Use standard as fallback
+        inputStyle = {
+          ...inputStyle,
+          border: `1px solid ${isDarkMode ? '#4b5563' : colors?.border || '#e2e8f0'}`,
+        };
     }
     
     // Apply theme styles
@@ -299,14 +311,21 @@ export function FieldPreview({
           disabled={previewState === 'disabled'}
           className={cn(
             "border transition-all",
-            settings.customCSS && "custom-field"
+            settings.customCSS && "custom-field",
+            `ui-variant-${uiVariant}` // Add class for UI variant
           )}
+          data-ui-variant={uiVariant} // Add data attribute for UI variant
           {...inputStyle}
         />
         
         {previewState === 'error' && (
           <p className="text-red-500 text-sm mt-1">This field has an error</p>
         )}
+      </div>
+      
+      <div className="py-2 px-3 bg-gray-50 dark:bg-gray-800 border rounded-md mt-2">
+        <h4 className="text-xs font-medium mb-1">Active UI Variant:</h4>
+        <p className="text-xs font-bold">{uiVariant.charAt(0).toUpperCase() + uiVariant.slice(1)}</p>
       </div>
       
       {settings.customCSS && (

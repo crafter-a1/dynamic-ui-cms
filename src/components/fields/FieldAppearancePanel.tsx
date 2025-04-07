@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, Eye, Code, Palette } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
 
 export interface FieldAppearancePanelProps {
   form: UseFormReturn<any, any, undefined>;
@@ -55,6 +56,15 @@ export function FieldAppearancePanel({
   const [isDarkMode, setIsDarkMode] = useState(initialData?.isDarkMode || false);
   const [previewState, setPreviewState] = useState('default');
   
+  // Colors
+  const [colors, setColors] = useState({
+    border: initialData?.colors?.border || '#e2e8f0',
+    text: initialData?.colors?.text || '#1e293b',
+    background: initialData?.colors?.background || '#ffffff',
+    focus: initialData?.colors?.focus || '#3b82f6',
+    label: initialData?.colors?.label || '#64748b'
+  });
+  
   // Predefined UI variations
   const uiVariations = [
     { id: 'default', name: 'Default', styles: {} },
@@ -80,11 +90,18 @@ export function FieldAppearancePanel({
       labelSize,
       customCss,
       uiVariation: selectedVariation,
-      isDarkMode
+      isDarkMode,
+      colors
     };
     
     onUpdate(settings);
     updatePreviewStyles(settings);
+    
+    // Show toast notification
+    toast({
+      title: "Appearance settings updated",
+      description: "Your changes have been saved"
+    });
   };
   
   // Update preview styles based on settings
@@ -96,15 +113,17 @@ export function FieldAppearancePanel({
       marginBottom: settings.labelPosition === 'top' ? '0.5rem' : '0',
       width: settings.labelPosition === 'left' ? `${settings.labelWidth}%` : 'auto',
       textAlign: settings.textAlign as 'left' | 'center' | 'right',
-      color: settings.isDarkMode ? '#fff' : '#333',
+      color: settings.isDarkMode ? '#fff' : settings.colors?.label || '#333',
       fontWeight: settings.labelSize === 'large' ? 600 : 500,
       transition: 'all 0.2s ease'
     };
     
     // Input styles
     const inputStyle: React.CSSProperties = {
-      backgroundColor: settings.filled ? (settings.isDarkMode ? '#374151' : '#f1f5f9') : 'transparent',
-      border: settings.showBorder ? (settings.isDarkMode ? '1px solid #4b5563' : '1px solid #cbd5e1') : 'none',
+      backgroundColor: settings.filled ? 
+        (settings.isDarkMode ? '#374151' : settings.colors?.background || '#f1f5f9') : 'transparent',
+      border: settings.showBorder ? 
+        (settings.isDarkMode ? '1px solid #4b5563' : `1px solid ${settings.colors?.border || '#cbd5e1'}`) : 'none',
       borderRadius: settings.roundedCorners === 'none' ? '0' : 
                    settings.roundedCorners === 'small' ? '0.25rem' : 
                    settings.roundedCorners === 'medium' ? '0.375rem' : '0.5rem',
@@ -113,8 +132,9 @@ export function FieldAppearancePanel({
       fontSize: settings.fieldSize === 'small' ? '0.875rem' : 
                settings.fieldSize === 'medium' ? '1rem' : '1.125rem',
       width: settings.labelPosition === 'left' ? `${100 - settings.labelWidth}%` : '100%',
-      color: settings.isDarkMode ? '#e5e7eb' : '#333',
-      boxShadow: settings.floatLabel ? (settings.isDarkMode ? '0 1px 2px rgba(0,0,0,0.4)' : '0 1px 2px rgba(0,0,0,0.1)') : 'none',
+      color: settings.isDarkMode ? '#e5e7eb' : settings.colors?.text || '#333',
+      boxShadow: settings.floatLabel ? 
+        (settings.isDarkMode ? '0 1px 2px rgba(0,0,0,0.4)' : '0 1px 2px rgba(0,0,0,0.1)') : 'none',
       transition: 'all 0.2s ease'
     };
     
@@ -153,10 +173,36 @@ export function FieldAppearancePanel({
     setPreviewStyle(containerStyle);
   };
   
-  // Effect to update preview on initial load
+  // Effect to update preview on initial load and when initialData changes
   useEffect(() => {
+    if (initialData) {
+      // Update all state from initialData
+      if (initialData.textAlign) setTextAlign(initialData.textAlign);
+      if (initialData.labelPosition) setLabelPosition(initialData.labelPosition);
+      if (initialData.labelWidth) setLabelWidth(initialData.labelWidth);
+      if (initialData.floatLabel !== undefined) setFloatLabel(initialData.floatLabel);
+      if (initialData.filled !== undefined) setFilled(initialData.filled);
+      if (initialData.showBorder !== undefined) setShowBorder(initialData.showBorder);
+      if (initialData.showBackground !== undefined) setShowBackground(initialData.showBackground);
+      if (initialData.roundedCorners) setRoundedCorners(initialData.roundedCorners);
+      if (initialData.fieldSize) setFieldSize(initialData.fieldSize);
+      if (initialData.labelSize) setLabelSize(initialData.labelSize);
+      if (initialData.customCss) setCustomCss(initialData.customCss);
+      if (initialData.uiVariation) setSelectedVariation(initialData.uiVariation);
+      if (initialData.isDarkMode !== undefined) setIsDarkMode(initialData.isDarkMode);
+      if (initialData.colors) {
+        setColors({
+          border: initialData.colors.border || colors.border,
+          text: initialData.colors.text || colors.text,
+          background: initialData.colors.background || colors.background,
+          focus: initialData.colors.focus || colors.focus,
+          label: initialData.colors.label || colors.label
+        });
+      }
+    }
+    
     updateSettings();
-  }, []);
+  }, [initialData]);
   
   // Handle changes to any setting
   const handleSettingChange = (setting: string, value: any) => {
@@ -196,6 +242,9 @@ export function FieldAppearancePanel({
         break;
       case 'isDarkMode':
         setIsDarkMode(value);
+        break;
+      case 'colors':
+        setColors({...colors, ...value});
         break;
       default:
         break;

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Collections', path: '/collections', icon: Box },
   { name: 'Components', path: '/components', icon: Component },
   { name: 'Content', path: '/content', icon: FileText },
@@ -64,6 +64,7 @@ export function Sidebar() {
                         ? "bg-slate-700 text-white" 
                         : "text-slate-300 hover:bg-slate-700 hover:text-white"
                     )}
+                    onClick={() => setCollapsed(true)}
                   >
                     <Icon className="h-5 w-5 mr-3" />
                     <span>{item.name}</span>

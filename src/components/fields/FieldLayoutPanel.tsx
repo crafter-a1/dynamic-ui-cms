@@ -1,284 +1,158 @@
 
-import React, { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { NumberInputField } from "./inputs/NumberInputField";
-import { DateCalendarField } from "./inputs/DateCalendarField";
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { CheckCircle } from 'lucide-react';
 
-export function FieldLayoutPanel() {
-  const [numberValue, setNumberValue] = useState<number | null>(1000);
-  const [dateValue, setDateValue] = useState<Date | null>(new Date());
-  const [activeTab, setActiveTab] = useState("number");
+interface FieldLayoutPanelProps {
+  initialData?: any;
+  onSave?: (data: any) => void;
+}
+
+export function FieldLayoutPanel({ initialData = {}, onSave }: FieldLayoutPanelProps) {
+  const [selectedLayout, setSelectedLayout] = useState(initialData.layout || 'standard');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const layouts = [
+    {
+      id: 'standard',
+      name: 'Standard Layout',
+      description: 'Label above field with full width',
+      preview: (
+        <div className="border p-2 rounded-md">
+          <div className="mb-1 text-xs">Label</div>
+          <div className="bg-gray-100 h-6 rounded-sm"></div>
+        </div>
+      )
+    },
+    {
+      id: 'inline',
+      name: 'Inline Layout',
+      description: 'Label and field on same line',
+      preview: (
+        <div className="border p-2 rounded-md">
+          <div className="flex items-center">
+            <div className="text-xs w-1/3">Label</div>
+            <div className="bg-gray-100 h-6 rounded-sm flex-1"></div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'compact',
+      name: 'Compact Layout',
+      description: 'Reduced padding and margins',
+      preview: (
+        <div className="border p-1 rounded-md">
+          <div className="mb-0.5 text-xs">Label</div>
+          <div className="bg-gray-100 h-5 rounded-sm"></div>
+        </div>
+      )
+    },
+    {
+      id: 'floating',
+      name: 'Floating Label',
+      description: 'Label floats within the field',
+      preview: (
+        <div className="border p-2 rounded-md">
+          <div className="relative">
+            <div className="absolute top-0 left-2 text-xs bg-white px-1 -mt-2 text-blue-500">Label</div>
+            <div className="bg-gray-100 h-8 rounded-sm"></div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const handleSave = () => {
+    setIsSaving(true);
+    
+    try {
+      const layoutData = {
+        layout: selectedLayout,
+        ...initialData
+      };
+      
+      if (onSave) {
+        onSave(layoutData);
+      }
+      
+      toast({
+        title: "Layout settings saved",
+        description: "Your field layout changes have been saved",
+      });
+    } catch (error) {
+      console.error("Error saving layout settings:", error);
+      toast({
+        title: "Error saving layout",
+        description: "There was a problem saving your layout settings",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Form Layout</h2>
-      <p className="text-gray-500">See previews of available field types and their configurations</p>
+      <h2 className="text-xl font-medium">Field Layout Configuration</h2>
+      <p className="text-gray-500">
+        Configure the layout settings for your fields
+      </p>
       
-      <Alert variant="info" className="bg-blue-50 border-blue-100">
-        <Info className="h-5 w-5 text-blue-500" />
-        <AlertDescription className="text-blue-700">
-          This panel allows you to preview different field types and their configurations.
-          Select a field type from the tabs below to explore available options.
-        </AlertDescription>
-      </Alert>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="number">Number</TabsTrigger>
-          <TabsTrigger value="date">Date/Calendar</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="number" className="space-y-6">
-          <h3 className="text-lg font-medium">Number Field Examples</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Basic Number</h4>
-                <NumberInputField 
-                  value={numberValue} 
-                  onChange={setNumberValue}
-                  label="Basic Number"
-                />
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Locale & Currency</h4>
-                <NumberInputField 
-                  value={numberValue} 
-                  onChange={setNumberValue}
-                  label="USD Currency"
-                  locale="en-US"
-                  currency="USD"
-                />
-                <div className="mt-4">
-                  <NumberInputField 
-                    value={numberValue} 
-                    onChange={setNumberValue}
-                    label="EUR Currency"
-                    locale="de-DE"
-                    currency="EUR"
-                  />
-                </div>
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Prefix & Suffix</h4>
-                <NumberInputField 
-                  value={numberValue} 
-                  onChange={setNumberValue}
-                  label="With Prefix"
-                  prefix="$"
-                />
-                <div className="mt-4">
-                  <NumberInputField 
-                    value={numberValue} 
-                    onChange={setNumberValue}
-                    label="With Suffix"
-                    suffix=" units"
-                  />
-                </div>
-              </div>
-            </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <Label className="text-base">Select Layout Style</Label>
             
-            <div className="space-y-4">
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Buttons</h4>
-                <NumberInputField 
-                  value={numberValue} 
-                  onChange={setNumberValue}
-                  label="Horizontal Buttons"
-                  showButtons
-                  buttonLayout="horizontal"
-                />
-                <div className="mt-4">
-                  <NumberInputField 
-                    value={numberValue} 
-                    onChange={setNumberValue}
-                    label="Vertical Buttons"
-                    showButtons
-                    buttonLayout="vertical"
+            <RadioGroup
+              value={selectedLayout}
+              onValueChange={setSelectedLayout}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"
+            >
+              {layouts.map((layout) => (
+                <div key={layout.id} className="relative">
+                  <RadioGroupItem
+                    value={layout.id}
+                    id={`layout-${layout.id}`}
+                    className="sr-only"
                   />
+                  <Label
+                    htmlFor={`layout-${layout.id}`}
+                    className={cn(
+                      "flex flex-col h-full border rounded-md p-4 hover:border-primary transition-colors",
+                      selectedLayout === layout.id && "border-2 border-primary"
+                    )}
+                  >
+                    {selectedLayout === layout.id && (
+                      <CheckCircle className="h-5 w-5 absolute top-2 right-2 text-primary" />
+                    )}
+                    <span className="font-medium mb-2">{layout.name}</span>
+                    <div className="my-2">{layout.preview}</div>
+                    <span className="text-xs text-gray-500 mt-2">{layout.description}</span>
+                  </Label>
                 </div>
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Styling Options</h4>
-                <NumberInputField 
-                  value={numberValue} 
-                  onChange={setNumberValue}
-                  label="Float Label"
-                  floatLabel
-                />
-                <div className="mt-4">
-                  <NumberInputField 
-                    value={numberValue} 
-                    onChange={setNumberValue}
-                    label="Filled Style"
-                    filled
-                  />
-                </div>
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">States</h4>
-                <NumberInputField 
-                  value={numberValue} 
-                  onChange={setNumberValue}
-                  label="Invalid"
-                  invalid
-                />
-                <div className="mt-4">
-                  <NumberInputField 
-                    value={numberValue} 
-                    onChange={setNumberValue}
-                    label="Disabled"
-                    disabled
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="date" className="space-y-6">
-          <h3 className="text-lg font-medium">Date/Calendar Field Examples</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Basic Calendar</h4>
-                <DateCalendarField 
-                  value={dateValue} 
-                  onChange={setDateValue}
-                  label="Basic Date Picker"
-                />
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Date Formats</h4>
-                <DateCalendarField 
-                  value={dateValue} 
-                  onChange={setDateValue}
-                  label="MM/dd/yyyy"
-                  dateFormat="MM/dd/yyyy"
-                />
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="dd-MMM-yyyy"
-                    dateFormat="dd-MMM-yyyy"
-                  />
-                </div>
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Selection Types</h4>
-                <DateCalendarField 
-                  value={dateValue} 
-                  onChange={setDateValue}
-                  label="Multiple Selection"
-                  allowMultipleSelection
-                />
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="Range Selection"
-                    allowRangeSelection
-                  />
-                </div>
-              </div>
-            </div>
+              ))}
+            </RadioGroup>
             
-            <div className="space-y-4">
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Special Pickers</h4>
-                <DateCalendarField 
-                  value={dateValue} 
-                  onChange={setDateValue}
-                  label="Month Picker"
-                  monthPickerOnly
-                />
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="Year Picker"
-                    yearPickerOnly
-                  />
-                </div>
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">Advanced Features</h4>
-                <DateCalendarField 
-                  value={dateValue} 
-                  onChange={setDateValue}
-                  label="With Button Bar"
-                  showButtonBar
-                />
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="With Time Picker"
-                    includeTimePicker
-                  />
-                </div>
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="Multiple Months"
-                    showMultipleMonths
-                  />
-                </div>
-              </div>
-              
-              <div className="p-4 border rounded-md">
-                <h4 className="text-sm font-medium mb-3">States & Styles</h4>
-                <DateCalendarField 
-                  value={dateValue} 
-                  onChange={setDateValue}
-                  label="Float Label"
-                  floatingLabel
-                />
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="Invalid"
-                    invalid
-                  />
-                </div>
-                <div className="mt-4">
-                  <DateCalendarField 
-                    value={dateValue} 
-                    onChange={setDateValue}
-                    label="Disabled"
-                    disabled
-                  />
-                </div>
-              </div>
+            <div className="flex justify-end mt-6">
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isSaving ? "Saving..." : "Save Layout Settings"}
+              </Button>
             </div>
           </div>
-          
-          <div className="p-4 border rounded-md mt-4">
-            <h4 className="text-sm font-medium mb-3">Inline Mode</h4>
-            <Label className="text-sm font-medium mb-2 block">Inline Calendar</Label>
-            <DateCalendarField 
-              value={dateValue} 
-              onChange={setDateValue}
-              inlineMode
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+export default FieldLayoutPanel;

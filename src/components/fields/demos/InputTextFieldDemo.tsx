@@ -34,7 +34,7 @@ export function InputTextFieldDemo() {
                   label="Name"
                   placeholder="Enter your name"
                   value={basicValue}
-                  onChange={(e) => setBasicValue(e.target.value)}
+                  onChange={setBasicValue}
                   helpText="Please enter your full name"
                 />
               </div>
@@ -50,8 +50,8 @@ export function InputTextFieldDemo() {
                   label="Phone Number"
                   placeholder="Enter numbers only"
                   value={filteredValue}
-                  onChange={(e) => setFilteredValue(e.target.value)}
-                  keyFilter="numeric"
+                  onChange={setFilteredValue}
+                  keyFilter="numbers"
                   helpText="Only numeric characters are allowed"
                 />
               </div>
@@ -63,7 +63,7 @@ export function InputTextFieldDemo() {
                   label="Email Address"
                   placeholder="Enter your email"
                   value={floatValue}
-                  onChange={(e) => setFloatValue(e.target.value)}
+                  onChange={setFloatValue}
                   floatLabel
                   helpText="Label floats when the field is focused or has content"
                 />
@@ -75,6 +75,8 @@ export function InputTextFieldDemo() {
                   id="help-text-input"
                   label="Username"
                   placeholder="Choose a username"
+                  value=""
+                  onChange={() => {}}
                   helpText="Username must be 3-20 characters long and contain only letters, numbers, and underscores"
                 />
               </div>
@@ -89,7 +91,7 @@ export function InputTextFieldDemo() {
                   id="filled-input"
                   label="Bio"
                   value={filledValue}
-                  onChange={(e) => setFilledValue(e.target.value)}
+                  onChange={setFilledValue}
                   filled
                   helpText="This input comes pre-filled with content"
                 />
@@ -100,9 +102,8 @@ export function InputTextFieldDemo() {
                 <InputTextField
                   id="invalid-input"
                   label="Password"
-                  type="password"
                   value={invalidValue}
-                  onChange={(e) => setInvalidValue(e.target.value)}
+                  onChange={setInvalidValue}
                   invalid
                   errorMessage="Password must be at least 8 characters long"
                 />
@@ -114,6 +115,7 @@ export function InputTextFieldDemo() {
                   id="disabled-input"
                   label="Read-only Field"
                   value="This field cannot be edited"
+                  onChange={() => {}}
                   disabled
                   helpText="This input is disabled and cannot be modified"
                 />
@@ -125,6 +127,8 @@ export function InputTextFieldDemo() {
                   id="required-input"
                   label="Required Field"
                   placeholder="This field is required"
+                  value=""
+                  onChange={() => {}}
                   required
                 />
               </div>
@@ -139,7 +143,9 @@ export function InputTextFieldDemo() {
                   id="small-input"
                   label="Small Input"
                   placeholder="Small size input"
-                  size="small"
+                  value=""
+                  onChange={() => {}}
+                  fieldSize="small"
                 />
               </div>
               
@@ -149,7 +155,9 @@ export function InputTextFieldDemo() {
                   id="medium-input"
                   label="Medium Input"
                   placeholder="Medium size input"
-                  size="medium"
+                  value=""
+                  onChange={() => {}}
+                  fieldSize="medium"
                 />
               </div>
               
@@ -159,7 +167,9 @@ export function InputTextFieldDemo() {
                   id="large-input"
                   label="Large Input"
                   placeholder="Large size input"
-                  size="large"
+                  value=""
+                  onChange={() => {}}
+                  fieldSize="large"
                 />
               </div>
             </div>
