@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { validateUIVariant } from "@/utils/inputAdapters";
 
 interface UIVariantsTabProps {
   settings: any;
@@ -65,8 +66,8 @@ export function UIVariantsTab({ settings, onUpdate }: UIVariantsTabProps) {
     }
   ];
 
-  // Ensure we have a valid UI variant or default to 'standard'
-  const currentVariant = settings.uiVariant || 'standard';
+  // Ensure we have a valid UI variant using our validation utility
+  const currentVariant = validateUIVariant(settings.uiVariant);
   console.log(`Current UI variant in UIVariantsTab: ${currentVariant}`);
 
   return (

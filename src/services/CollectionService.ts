@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { normalizeAppearanceSettings, validateUIVariant } from '@/utils/inputAdapters';
 
 export interface ValidationSettings {
   required?: boolean;
@@ -32,6 +33,11 @@ export interface AppearanceSettings {
   customCss?: string;
   colors?: Record<string, string>;
   isDarkMode?: boolean;
+  responsive?: {
+    mobile?: Record<string, any>;
+    tablet?: Record<string, any>;
+    desktop?: Record<string, any>;
+  };
   [key: string]: any;
 }
 
@@ -111,6 +117,11 @@ const mapSupabaseField = (field: Database['public']['Tables']['fields']['Row']):
   // Log appearance settings specifically
   if (settings.appearance) {
     console.log(`Appearance settings for field ${field.name}:`, JSON.stringify(settings.appearance, null, 2));
+  }
+  
+  // Ensure appearance settings are properly normalized
+  if (settings.appearance) {
+    settings.appearance = normalizeAppearanceSettings(settings.appearance);
   }
 
   return {
@@ -272,16 +283,11 @@ export const CollectionService = {
         
         console.log('Updating appearance settings in database:', JSON.stringify(newAppearance, null, 2));
 
-        // Ensure appearance settings are properly merged
-        settingsToUpdate.appearance = {
+        // Ensure appearance settings are properly normalized and merged
+        settingsToUpdate.appearance = normalizeAppearanceSettings({
           ...(currentSettings.appearance || {}),
           ...newAppearance
-        };
-
-        // Ensure uiVariant is always present
-        if (!settingsToUpdate.appearance.uiVariant) {
-          settingsToUpdate.appearance.uiVariant = 'standard';
-        }
+        });
 
         console.log('Final appearance settings to save:', JSON.stringify(settingsToUpdate.appearance, null, 2));
         console.log('UI Variant being saved to database:', settingsToUpdate.appearance.uiVariant);
