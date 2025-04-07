@@ -22,13 +22,13 @@ export default function Users() {
     });
   };
 
-  // Create properly typed change handlers for each field
-  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value);
-  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value);
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
-  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value);
-  const handleBioChange = (e: React.ChangeEvent<HTMLInputElement>) => setBio(e.target.value);
+  // Create properly typed change handlers that match what InputTextField expects
+  const handleFirstNameChange = (value: string) => setFirstName(value);
+  const handleLastNameChange = (value: string) => setLastName(value);
+  const handleEmailChange = (value: string) => setEmail(value);
+  const handleUsernameChange = (value: string) => setUsername(value);
+  const handlePhoneNumberChange = (value: string) => setPhoneNumber(value);
+  const handleBioChange = (value: string) => setBio(value);
 
   return (
     <MainLayout>
