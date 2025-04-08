@@ -46,14 +46,20 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
       if (fieldData?.appearance) {
         console.log("[FieldAdvancedTab] Preserving appearance settings when saving advanced settings:", 
           JSON.stringify(fieldData.appearance, null, 2));
-        console.log("[FieldAdvancedTab] UI Variant being preserved:", fieldData.appearance.uiVariant);
-        updatedData.appearance = fieldData.appearance;
+        
+        if (fieldData.appearance.uiVariant) {
+          console.log("[FieldAdvancedTab] UI Variant being preserved:", fieldData.appearance.uiVariant);
+        }
+        
+        // Explicitly copy the appearance settings to ensure they are preserved
+        updatedData.appearance = { ...fieldData.appearance };
       }
       
       // Log what we're saving to debug any issues
       console.log("[FieldAdvancedTab] Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
       console.log("[FieldAdvancedTab] Updated field data with preserved appearance:", JSON.stringify(updatedData, null, 2));
       
+      // Update the field data with our merged object that contains both advanced and appearance settings
       onUpdate(updatedData);
       
       toast({

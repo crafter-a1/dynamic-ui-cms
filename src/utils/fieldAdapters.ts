@@ -105,31 +105,8 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
         JSON.stringify(field.appearance, null, 2));
     }
     
-    // Check for UI variant specifically in multiple possible locations
-    let uiVariant = appearance.uiVariant || appearance.uiVariation;
-    
-    // Also check for UI variant in settings directly
-    if (!uiVariant && field.settings?.uiVariant) {
-      uiVariant = field.settings.uiVariant;
-    }
-    
-    if (!uiVariant && field.settings?.uiVariation) {
-      uiVariant = field.settings.uiVariation;
-    }
-    
-    // If still no UI variant found, use standard
-    if (!uiVariant) {
-      console.log(`No uiVariant found for ${field.name}, setting to default 'standard'`);
-      uiVariant = 'standard';
-    } else {
-      console.log(`Field ${field.name} has uiVariant: ${uiVariant}`);
-    }
-    
-    // Ensure UI variant is included in appearance
-    const normalizedAppearance = {
-      ...appearance,
-      uiVariant: uiVariant
-    };
+    // IMPORTANT FIX: Store the appearance settings directly in the final field object
+    // to ensure they're available in the collection preview
     
     // Extract field-specific settings
     let fieldSpecificSettings = {};
@@ -195,8 +172,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     };
 
     // Debug logging for appearance settings
-    console.log(`Processed appearance for ${field.name}:`, JSON.stringify(normalizedAppearance, null, 2));
-    console.log(`UI variant for ${field.name}: ${normalizedAppearance.uiVariant}`);
+    console.log(`Processed appearance for ${field.name}:`, JSON.stringify(appearance, null, 2));
 
     // Get placeholder with consistent fallback
     let placeholder = ui_options.placeholder || field.placeholder || `Enter ${field.name}...`;
@@ -211,7 +187,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       placeholder: placeholder,
       ui_options: ui_options,
       validation: validation,
-      appearance: normalizedAppearance,
+      appearance: appearance, // Use extracted appearance directly
       advanced: advanced,
       options: field.options || [],
       // Include field-specific properties for backward compatibility

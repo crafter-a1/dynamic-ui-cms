@@ -1,3 +1,4 @@
+
 /**
  * Creates a function that accepts a React.ChangeEvent<HTMLInputElement> and calls the provided setter with the input value
  * @param setter - A state setter function that accepts a string value
@@ -67,10 +68,14 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
   // Log the normalized UI variant for debugging
   console.log(`[inputAdapters] Normalized UI variant: ${uiVariant}`);
   
+  // Create a normalized settings object, preserving any existing properties
+  // but ensuring required properties have sensible defaults
   const normalized = {
-    uiVariant,
+    ...settings, // Keep all original settings
+    uiVariant, // Override or set the UI variant with our validated value
     theme: settings.theme || 'classic',
     colors: {
+      ...(settings.colors || {}), // Keep any existing colors
       border: settings.colors?.border || '#e2e8f0',
       text: settings.colors?.text || '#1e293b',
       background: settings.colors?.background || '#ffffff',
@@ -111,11 +116,14 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
 export const normalizeFieldSpecificSettings = (fieldType: string, settings: any = {}): Record<string, any> => {
   console.log(`[inputAdapters] Normalizing field-specific settings for ${fieldType}:`, JSON.stringify(settings, null, 2));
   
-  const normalizedSettings: Record<string, any> = {};
+  const normalizedSettings: Record<string, any> = {
+    ...settings // Start with all original settings to preserve any we don't explicitly handle
+  };
   
   switch (fieldType.toLowerCase()) {
     case 'number':
       return {
+        ...normalizedSettings,
         min: settings.min !== undefined ? Number(settings.min) : undefined,
         max: settings.max !== undefined ? Number(settings.max) : undefined,
         step: settings.step !== undefined ? Number(settings.step) : 1,
@@ -130,6 +138,7 @@ export const normalizeFieldSpecificSettings = (fieldType: string, settings: any 
     case 'text':
     case 'password':
       return {
+        ...normalizedSettings,
         keyFilter: settings.keyFilter || 'none',
         maxLength: settings.maxLength ? Number(settings.maxLength) : undefined,
         minLength: settings.minLength ? Number(settings.minLength) : undefined,
@@ -139,6 +148,7 @@ export const normalizeFieldSpecificSettings = (fieldType: string, settings: any 
     case 'textarea':
     case 'markdown':
       return {
+        ...normalizedSettings,
         rows: settings.rows ? Number(settings.rows) : 5,
         minLength: settings.minLength ? Number(settings.minLength) : undefined,
         maxLength: settings.maxLength ? Number(settings.maxLength) : undefined,
@@ -147,12 +157,14 @@ export const normalizeFieldSpecificSettings = (fieldType: string, settings: any 
     case 'wysiwyg':
     case 'blockeditor':
       return {
+        ...normalizedSettings,
         minHeight: settings.minHeight || '200px',
         toolbar: settings.toolbar || ['basic'],
       };
       
     case 'tags':
       return {
+        ...normalizedSettings,
         maxTags: settings.maxTags ? Number(settings.maxTags) : 10,
         duplicates: !!settings.allowDuplicates,
         transform: settings.transform || 'none', // none, lowercase, uppercase
@@ -160,12 +172,14 @@ export const normalizeFieldSpecificSettings = (fieldType: string, settings: any 
       
     case 'mask':
       return {
+        ...normalizedSettings,
         mask: settings.mask || '',
         placeholder: settings.placeholder || '',
       };
       
     case 'slug':
       return {
+        ...normalizedSettings,
         prefix: settings.prefix || '',
         suffix: settings.suffix || '',
         separator: settings.separator || '-',
@@ -173,12 +187,14 @@ export const normalizeFieldSpecificSettings = (fieldType: string, settings: any 
       
     case 'otp':
       return {
+        ...normalizedSettings,
         length: settings.length ? Number(settings.length) : 6,
         type: ['numeric', 'alphanumeric'].includes(settings.type) ? settings.type : 'numeric',
       };
       
     case 'color':
       return {
+        ...normalizedSettings,
         showAlpha: !!settings.showAlpha,
         presets: Array.isArray(settings.presets) ? settings.presets : [],
         defaultFormat: ['hex', 'rgb', 'hsl'].includes(settings.defaultFormat) ? settings.defaultFormat : 'hex',

@@ -33,45 +33,24 @@ export default function CollectionPreview() {
         const fetchedFields = await getFieldsForCollection(collectionId);
         console.log("[CollectionPreview] Raw fields fetched from database:", JSON.stringify(fetchedFields, null, 2));
         
-        // Detailed logging of appearance settings for each field
-        fetchedFields.forEach((field: any) => {
-          console.log(`[CollectionPreview] Field ${field.name} type: ${field.type}`);
-          console.log(`[CollectionPreview] Field ${field.name} appearance location check:`, {
-            'field.appearance': field.appearance ? 'exists' : 'missing',
-            'field.settings?.appearance': field.settings?.appearance ? 'exists' : 'missing',
-            'uiVariant in field.appearance': field.appearance?.uiVariant || 'not found',
-            'uiVariant in field.settings.appearance': field.settings?.appearance?.uiVariant || 'not found',
-            'uiVariant in field.settings': field.settings?.uiVariant || 'not found'
-          });
-          
-          if (field.appearance) {
-            console.log(`[CollectionPreview] Original field ${field.name} appearance:`, JSON.stringify(field.appearance, null, 2));
-          }
-          if (field.settings?.appearance) {
-            console.log(`[CollectionPreview] Settings appearance for ${field.name}:`, JSON.stringify(field.settings.appearance, null, 2));
-          }
-        });
-        
         // Process fields to ensure consistent structure with field-specific settings
         console.log("[CollectionPreview] Adapting fields for preview...");
         const adaptedFields = adaptFieldsForPreview(fetchedFields);
         console.log("[CollectionPreview] Adapted fields for preview:", JSON.stringify(adaptedFields, null, 2));
         
-        // Log field types and their specific settings for debugging
+        // Verify appearance settings for each field
         adaptedFields.forEach(field => {
-          console.log(`[CollectionPreview] Preview: Field ${field.name} (${field.type}) UI variant:`, 
-            field.appearance?.uiVariant);
-            
           // Log each styling property that might affect the field's appearance
-          console.log(`[CollectionPreview] Field ${field.name} final appearance properties:`, {
-            'uiVariant': field.appearance?.uiVariant || 'not set',
-            'textAlign': field.appearance?.textAlign || 'not set',
-            'filled': field.appearance?.filled || 'not set',
-            'showBorder': field.appearance?.showBorder || 'not set',
-            'roundedCorners': field.appearance?.roundedCorners || 'not set',
-            'fieldSize': field.appearance?.fieldSize || 'not set',
-            'colors': field.appearance?.colors ? 'customized' : 'default'
-          });
+          console.log(`[CollectionPreview] Field ${field.name} appearance settings:`, field.appearance);
+          
+          if (!field.appearance || Object.keys(field.appearance).length === 0) {
+            console.warn(`[CollectionPreview] WARNING: No appearance settings found for field ${field.name}`);
+          } else {
+            console.log(`[CollectionPreview] Field ${field.name} UI variant:`, field.appearance.uiVariant);
+            if (field.appearance.colors) {
+              console.log(`[CollectionPreview] Field ${field.name} colors:`, field.appearance.colors);
+            }
+          }
         });
         
         setFields(adaptedFields);
