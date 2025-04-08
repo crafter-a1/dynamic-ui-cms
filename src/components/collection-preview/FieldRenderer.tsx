@@ -48,11 +48,16 @@ export const FieldRenderer = ({ field, formData, titleField, onInputChange, erro
   const hasError = errors && errors[fieldId]?.length > 0;
   const errorMessage = errors && errors[fieldId]?.join(", ");
 
-  const appearance = field.appearance || {};
+  let appearance = field.appearance || {};
   console.log(`Rendering field ${fieldName} with appearance:`, JSON.stringify(appearance, null, 2));
 
   const uiVariant = validateUIVariant(appearance.uiVariant);
   console.log(`UI Variant for field ${fieldName} in FieldRenderer:`, uiVariant);
+  
+  appearance = {
+    ...appearance,
+    uiVariant
+  };
   
   const {
     textAlign = "left",

@@ -35,31 +35,46 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
     try {
       setAdvancedSettings(advancedSettings);
       
-      // Merge with existing field data if needed
-      const updatedData = {
-        ...(fieldData || {}),
-        advanced: advancedSettings
-      };
+      // Create a deep copy of the existing field data to work with
+      let updatedData = JSON.parse(JSON.stringify(fieldData || {}));
       
-      // IMPORTANT: Preserve appearance settings
-      // Ensure we don't lose appearance settings if they exist
+      // Preserve all existing settings and just update the advanced part
+      // This ensures we don't lose appearance, validation, or ui_options
+      
+      console.log("[FieldAdvancedTab] Original field data before update:", JSON.stringify(updatedData, null, 2));
+      
+      // Set the advanced settings directly
+      updatedData.advanced = advancedSettings;
+      
+      // CRITICAL: Preserve ALL other settings explicitly
+      // Special focus on appearance which must never be lost
       if (fieldData?.appearance) {
-        console.log("[FieldAdvancedTab] Preserving appearance settings when saving advanced settings:", 
+        console.log("[FieldAdvancedTab] Preserving appearance settings:", 
           JSON.stringify(fieldData.appearance, null, 2));
-        
-        if (fieldData.appearance.uiVariant) {
-          console.log("[FieldAdvancedTab] UI Variant being preserved:", fieldData.appearance.uiVariant);
-        }
-        
-        // Explicitly copy the appearance settings to ensure they are preserved
         updatedData.appearance = { ...fieldData.appearance };
+        
+        // Extra safeguard for UI variant
+        console.log("[FieldAdvancedTab] UI Variant being preserved:", fieldData.appearance.uiVariant);
+      }
+      
+      // Preserve other important settings
+      if (fieldData?.validation) {
+        updatedData.validation = { ...fieldData.validation };
+      }
+      
+      if (fieldData?.ui_options) {
+        updatedData.ui_options = { ...fieldData.ui_options };
+      }
+      
+      if (fieldData?.helpText) {
+        updatedData.helpText = fieldData.helpText;
       }
       
       // Log what we're saving to debug any issues
       console.log("[FieldAdvancedTab] Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
-      console.log("[FieldAdvancedTab] Updated field data with preserved appearance:", JSON.stringify(updatedData, null, 2));
+      console.log("[FieldAdvancedTab] Complete updated field data:", JSON.stringify(updatedData, null, 2));
       
-      // Update the field data with our merged object that contains both advanced and appearance settings
+      // Update the field data with our deep-copied and merged object
       onUpdate(updatedData);
       
       toast({

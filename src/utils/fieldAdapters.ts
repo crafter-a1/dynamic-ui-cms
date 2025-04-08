@@ -83,30 +83,42 @@ export function adaptNumberFieldSettings(settings: any): any {
 }
 
 export function adaptFieldsForPreview(fields: any[]): any[] {
-  console.log('Raw fields data received for preview:', JSON.stringify(fields, null, 2));
+  console.log('[fieldAdapters] Raw fields data received for preview:', JSON.stringify(fields, null, 2));
 
   return fields.map(field => {
     const apiId = field.api_id || field.apiId || field.name?.toLowerCase().replace(/\s+/g, '_');
     
-    // Extract appearance settings more consistently
-    // Start by looking in settings.appearance, then field.appearance, then individual properties
+    // CRITICAL FIX: Extract appearance settings correctly and with proper precedence
+    // This is the main source of the bug where settings weren't being preserved
     let appearance: Record<string, any> = {};
     
-    // Check all possible locations where appearance settings might be stored
-    if (field.settings?.appearance) {
-      appearance = { ...appearance, ...field.settings.appearance };
-      console.log(`Found appearance in settings.appearance for ${field.name}:`, 
-        JSON.stringify(field.settings.appearance, null, 2));
-    }
+    // Log the input field for debugging
+    console.log(`[fieldAdapters] Processing field ${field.name} for preview:`, JSON.stringify(field, null, 2));
     
-    if (field.appearance) {
+    // First check for direct appearance settings (this has highest precedence)
+    if (field.appearance && Object.keys(field.appearance).length > 0) {
       appearance = { ...appearance, ...field.appearance };
-      console.log(`Found appearance at root level for ${field.name}:`, 
+      console.log(`[fieldAdapters] Found appearance at root level for ${field.name}:`, 
         JSON.stringify(field.appearance, null, 2));
     }
     
-    // IMPORTANT FIX: Store the appearance settings directly in the final field object
-    // to ensure they're available in the collection preview
+    // Then check for settings.appearance (lower precedence)
+    if (field.settings?.appearance && Object.keys(field.settings.appearance).length > 0) {
+      // Only use these if not already set by direct appearance
+      Object.keys(field.settings.appearance).forEach(key => {
+        if (appearance[key] === undefined) {
+          appearance[key] = field.settings.appearance[key];
+        }
+      });
+      console.log(`[fieldAdapters] Found appearance in settings.appearance for ${field.name}:`, 
+        JSON.stringify(field.settings.appearance, null, 2));
+    }
+    
+    // Double-check that UI variant is preserved, this is crucial
+    if (!appearance.uiVariant && field.appearance?.uiVariant) {
+      appearance.uiVariant = field.appearance.uiVariant;
+      console.log(`[fieldAdapters] Explicitly preserving UI variant for ${field.name}: ${appearance.uiVariant}`);
+    }
     
     // Extract field-specific settings
     let fieldSpecificSettings = {};
@@ -171,11 +183,14 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       ...fieldSpecificSettings
     };
 
-    // Debug logging for appearance settings
-    console.log(`Processed appearance for ${field.name}:`, JSON.stringify(appearance, null, 2));
+    // Debug logging for final appearance settings
+    console.log(`[fieldAdapters] Final processed appearance for ${field.name}:`, JSON.stringify(appearance, null, 2));
 
     // Get placeholder with consistent fallback
     let placeholder = ui_options.placeholder || field.placeholder || `Enter ${field.name}...`;
+    
+    // Get help text with consistent fallback
+    let helpText = field.settings?.helpText || field.helpText || field.description || ui_options.help_text;
 
     return {
       id: field.id,
@@ -183,7 +198,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       type: field.type,
       apiId: apiId,
       required: field.required || false,
-      helpText: field.settings?.helpText || field.description || ui_options.help_text,
+      helpText: helpText,
       placeholder: placeholder,
       ui_options: ui_options,
       validation: validation,

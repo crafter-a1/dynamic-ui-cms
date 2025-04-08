@@ -44,7 +44,7 @@ export const validateUIVariant = (variant: any): "standard" | "material" | "pill
  */
 export const normalizeAppearanceSettings = (appearance: any = {}): Record<string, any> => {
   // Ensure we're working with an object
-  const settings = typeof appearance === 'object' && appearance !== null ? appearance : {};
+  const settings = typeof appearance === 'object' && appearance !== null ? { ...appearance } : {};
   
   // Log original settings for debugging
   console.log("[inputAdapters] Original appearance settings before normalization:", JSON.stringify(settings, null, 2));
@@ -63,7 +63,7 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
   }
   
   // Validate and normalize UI variant - ensure we always have a valid value
-  const uiVariant = validateUIVariant(uiVariantValue || 'standard');
+  const uiVariant = validateUIVariant(uiVariantValue);
   
   // Log the normalized UI variant for debugging
   console.log(`[inputAdapters] Normalized UI variant: ${uiVariant}`);

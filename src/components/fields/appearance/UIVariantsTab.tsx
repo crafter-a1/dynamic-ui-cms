@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -69,6 +69,16 @@ export function UIVariantsTab({ settings, onUpdate }: UIVariantsTabProps) {
   // Ensure we have a valid UI variant using our validation utility
   const currentVariant = validateUIVariant(settings.uiVariant);
   console.log(`Current UI variant in UIVariantsTab: ${currentVariant}`);
+  
+  // Ensure the UI variant is updated in settings when component mounts
+  useEffect(() => {
+    // Only update if the current variant differs from what's in settings
+    // This prevents unnecessary updates and potential update loops
+    if (settings.uiVariant !== currentVariant) {
+      console.log(`UIVariantsTab: Updating UI variant from ${settings.uiVariant} to ${currentVariant}`);
+      onUpdate({ uiVariant: currentVariant });
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
