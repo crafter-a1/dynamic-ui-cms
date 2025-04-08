@@ -52,7 +52,7 @@ export function FieldAppearancePanel({
     }
   }, [initialData]);
 
-  // Update settings and save to parent
+  // Update settings and trigger save to parent immediately
   const updateSettings = (newSettings: Partial<typeof settings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     
@@ -68,15 +68,18 @@ export function FieldAppearancePanel({
     if (newSettings.uiVariant) {
       console.log("UI Variant updated to:", updatedSettings.uiVariant);
     }
+    
+    // Save immediately to ensure changes are persisted
+    saveAllSettings(updatedSettings);
   };
 
   // Save all settings to parent component
-  const saveAllSettings = () => {
+  const saveAllSettings = (settingsToSave = settings) => {
     setIsSaving(true);
 
     try {
       // Ensure settings are properly normalized before saving
-      const normalizedSettings = normalizeAppearanceSettings(settings);
+      const normalizedSettings = normalizeAppearanceSettings(settingsToSave);
       
       console.log("Saving appearance settings:", normalizedSettings);
       console.log("UI Variant being saved:", normalizedSettings.uiVariant);
@@ -160,7 +163,7 @@ export function FieldAppearancePanel({
 
       <div className="flex justify-end">
         <Button
-          onClick={saveAllSettings}
+          onClick={() => saveAllSettings()}
           disabled={isSaving}
           className="bg-blue-600 hover:bg-blue-700"
         >

@@ -239,8 +239,8 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       appearance: appearance, 
       advanced: advanced,
       options: field.options || [],
-      // Include field-specific properties for backward compatibility
-      ...fieldSpecificSettings
+      // Include any field-specific settings
+      ...field.settings
     };
   });
 }

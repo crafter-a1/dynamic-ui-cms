@@ -39,13 +39,14 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
       setAdvancedSettings(advancedSettings);
       
       // Create a deep copy of the existing field data to work with
-      let updatedData = fieldData ? JSON.parse(JSON.stringify(fieldData)) : {};
+      const updatedData = fieldData ? JSON.parse(JSON.stringify(fieldData)) : {};
       
-      // Set the advanced settings while preserving all other settings
-      updatedData = {
-        ...updatedData,
-        advanced: advancedSettings,
-      };
+      // Set the advanced settings
+      if (!updatedData.settings) {
+        updatedData.settings = {};
+      }
+      
+      updatedData.settings.advanced = advancedSettings;
       
       // Log the complete updated field data
       console.log("[FieldAdvancedTab] Complete updated field data:", JSON.stringify(updatedData, null, 2));

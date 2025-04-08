@@ -280,11 +280,16 @@ export const CollectionService = {
       if (fieldData.sort_order !== undefined) updateData.sort_order = fieldData.sort_order;
 
       // Get current field data to properly merge with updates
-      const { data: currentField } = await supabase
+      const { data: currentField, error: getCurrentError } = await supabase
         .from('fields')
         .select('settings')
         .eq('id', fieldId)
         .single();
+
+      if (getCurrentError) {
+        console.error('Error retrieving current field data:', getCurrentError);
+        throw getCurrentError;
+      }
 
       // Create a deep copy of the current settings
       const currentSettings = (currentField?.settings as Record<string, any>) || {};
@@ -296,10 +301,16 @@ export const CollectionService = {
       // Initialize settings to update with deep copy of current settings
       let settingsToUpdate: Record<string, any> = JSON.parse(JSON.stringify(currentSettings));
 
+      // Check if direct settings object is provided
+      if (fieldData.settings) {
+        console.log('[updateField] Merging provided settings object:', JSON.stringify(fieldData.settings, null, 2));
+        settingsToUpdate = deepMerge(settingsToUpdate, fieldData.settings);
+      }
+
       // Handle UI options
       if (fieldData.settings?.ui_options || fieldData.ui_options) {
         const newUiOptions = fieldData.settings?.ui_options || fieldData.ui_options || {};
-        settingsToUpdate.ui_options = deepMerge(currentSettings.ui_options || {}, newUiOptions);
+        settingsToUpdate.ui_options = deepMerge(settingsToUpdate.ui_options || {}, newUiOptions);
       }
 
       // Handle help text
@@ -310,7 +321,7 @@ export const CollectionService = {
       // Handle validation settings with deep merge
       if (fieldData.settings?.validation || fieldData.validation) {
         const newValidation = fieldData.settings?.validation || fieldData.validation || {};
-        settingsToUpdate.validation = deepMerge(currentSettings.validation || {}, newValidation);
+        settingsToUpdate.validation = deepMerge(settingsToUpdate.validation || {}, newValidation);
       }
 
       // Handle appearance settings with deep merge
@@ -318,11 +329,11 @@ export const CollectionService = {
         const newAppearance = fieldData.settings?.appearance || fieldData.appearance || {};
         
         // Log the appearance settings we're about to merge
-        console.log('[updateField] Current appearance:', JSON.stringify(currentSettings.appearance || {}, null, 2));
+        console.log('[updateField] Current appearance:', JSON.stringify(settingsToUpdate.appearance || {}, null, 2));
         console.log('[updateField] New appearance to merge:', JSON.stringify(newAppearance, null, 2));
         
         // Use deep merge to preserve all existing values not explicitly overwritten
-        settingsToUpdate.appearance = deepMerge(currentSettings.appearance || {}, newAppearance);
+        settingsToUpdate.appearance = deepMerge(settingsToUpdate.appearance || {}, newAppearance);
         
         // Ensure UI variant is properly set
         if (newAppearance.uiVariant) {
@@ -336,7 +347,7 @@ export const CollectionService = {
       // Handle advanced settings with deep merge
       if (fieldData.settings?.advanced || fieldData.advanced) {
         const newAdvanced = fieldData.settings?.advanced || fieldData.advanced || {};
-        settingsToUpdate.advanced = deepMerge(currentSettings.advanced || {}, newAdvanced);
+        settingsToUpdate.advanced = deepMerge(settingsToUpdate.advanced || {}, newAdvanced);
       }
 
       // Set the updated settings

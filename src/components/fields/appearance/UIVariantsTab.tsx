@@ -78,7 +78,7 @@ export function UIVariantsTab({ settings, onUpdate }: UIVariantsTabProps) {
       console.log(`[UIVariantsTab] Updating UI variant from ${settings.uiVariant} to ${currentVariant}`);
       onUpdate({ uiVariant: currentVariant });
     }
-  }, [currentVariant, settings.uiVariant]);
+  }, [currentVariant, settings.uiVariant, onUpdate]);
 
   return (
     <div className="space-y-6">
@@ -91,9 +91,13 @@ export function UIVariantsTab({ settings, onUpdate }: UIVariantsTabProps) {
         value={currentVariant}
         onValueChange={(value) => {
           console.log('[UIVariantsTab] UI Variant selected:', value);
+          // Call onUpdate immediately with the validated value to ensure it's saved
+          const validatedVariant = validateUIVariant(value);
+          console.log('[UIVariantsTab] Validated UI Variant to save:', validatedVariant);
+          
           // Force update the uiVariant setting with the validated value
           onUpdate({ 
-            uiVariant: validateUIVariant(value)
+            uiVariant: validatedVariant
           });
         }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"
