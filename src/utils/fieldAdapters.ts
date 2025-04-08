@@ -1,4 +1,3 @@
-
 export function adaptCollectionFormData(values: any): any {
   const adaptedFields = values.fields.map((field: any) => {
     let settings = field.settings || {};
@@ -97,27 +96,61 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     
     // First check for direct appearance settings (this has highest precedence)
     if (field.appearance && Object.keys(field.appearance).length > 0) {
-      appearance = { ...appearance, ...field.appearance };
+      appearance = { ...field.appearance };
       console.log(`[fieldAdapters] Found appearance at root level for ${field.name}:`, 
         JSON.stringify(field.appearance, null, 2));
     }
     
-    // Then check for settings.appearance (lower precedence)
+    // Then check for settings.appearance (next level of precedence)
     if (field.settings?.appearance && Object.keys(field.settings.appearance).length > 0) {
-      // Only use these if not already set by direct appearance
-      Object.keys(field.settings.appearance).forEach(key => {
-        if (appearance[key] === undefined) {
-          appearance[key] = field.settings.appearance[key];
-        }
-      });
+      // If we don't have any appearance settings yet, use the ones from settings
+      if (Object.keys(appearance).length === 0) {
+        appearance = { ...field.settings.appearance };
+      } else {
+        // Otherwise, merge in settings that aren't already set
+        Object.keys(field.settings.appearance).forEach(key => {
+          if (appearance[key] === undefined) {
+            appearance[key] = field.settings.appearance[key];
+          }
+        });
+      }
       console.log(`[fieldAdapters] Found appearance in settings.appearance for ${field.name}:`, 
         JSON.stringify(field.settings.appearance, null, 2));
     }
     
     // Double-check that UI variant is preserved, this is crucial
-    if (!appearance.uiVariant && field.appearance?.uiVariant) {
-      appearance.uiVariant = field.appearance.uiVariant;
+    if (!appearance.uiVariant && (field.appearance?.uiVariant || field.settings?.appearance?.uiVariant)) {
+      appearance.uiVariant = field.appearance?.uiVariant || field.settings?.appearance?.uiVariant;
       console.log(`[fieldAdapters] Explicitly preserving UI variant for ${field.name}: ${appearance.uiVariant}`);
+    }
+    
+    // Ensure we have a valid set of appearance settings
+    if (Object.keys(appearance).length === 0) {
+      console.log(`[fieldAdapters] No appearance settings found for ${field.name}, creating defaults`);
+      appearance = {
+        uiVariant: "standard",
+        theme: "classic",
+        colors: {
+          border: "#e2e8f0",
+          text: "#1e293b",
+          background: "#ffffff",
+          focus: "#3b82f6",
+          label: "#64748b"
+        },
+        customCSS: "",
+        isDarkMode: false,
+        textAlign: "left",
+        labelPosition: "top",
+        labelWidth: 30,
+        floatLabel: false,
+        filled: false,
+        showBorder: true,
+        showBackground: false,
+        roundedCorners: "medium",
+        fieldSize: "medium",
+        labelSize: "medium",
+        customClass: ""
+      };
     }
     
     // Extract field-specific settings
@@ -171,19 +204,19 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
         break;
     }
     
-    // Extract additional UI options
+    // Extract UI options with fallbacks
     const ui_options = field.settings?.ui_options || field.ui_options || {};
     
-    // Extract validation settings
+    // Extract validation settings with fallbacks
     const validation = field.settings?.validation || field.validation || {};
     
-    // Extract advanced settings, merging with any previously extracted field-specific settings
+    // Extract advanced settings with fallbacks, merging with field-specific settings
     const advanced = {
       ...(field.settings?.advanced || field.advanced || {}),
       ...fieldSpecificSettings
     };
 
-    // Debug logging for final appearance settings
+    // Log the final appearance settings for debugging
     console.log(`[fieldAdapters] Final processed appearance for ${field.name}:`, JSON.stringify(appearance, null, 2));
 
     // Get placeholder with consistent fallback
@@ -192,6 +225,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     // Get help text with consistent fallback
     let helpText = field.settings?.helpText || field.helpText || field.description || ui_options.help_text;
 
+    // Return the processed field
     return {
       id: field.id,
       name: field.name,
@@ -202,7 +236,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
       placeholder: placeholder,
       ui_options: ui_options,
       validation: validation,
-      appearance: appearance, // Use extracted appearance directly
+      appearance: appearance, 
       advanced: advanced,
       options: field.options || [],
       // Include field-specific properties for backward compatibility

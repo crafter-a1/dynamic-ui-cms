@@ -33,34 +33,15 @@ export default function CollectionPreview() {
         const fetchedFields = await getFieldsForCollection(collectionId);
         console.log("[CollectionPreview] Raw fields fetched from database:", JSON.stringify(fetchedFields, null, 2));
         
-        // Some additional debugging to track appearance data
-        console.log("[CollectionPreview] Checking appearance settings in raw fields:");
-        fetchedFields.forEach((field: any) => {
-          console.log(`Field ${field.fieldName || field.name} appearance data:`, JSON.stringify(field.settings?.appearance || field.appearance || {}, null, 2));
-          
-          // Special logging for UI variant which is critical
-          const uiVariant = field.settings?.appearance?.uiVariant || field.appearance?.uiVariant || "standard";
-          console.log(`Field ${field.fieldName || field.name} UI variant:`, uiVariant);
-        });
-        
         // Process fields to ensure consistent structure with field-specific settings
         console.log("[CollectionPreview] Adapting fields for preview...");
         const adaptedFields = adaptFieldsForPreview(fetchedFields);
-        console.log("[CollectionPreview] Adapted fields for preview:", JSON.stringify(adaptedFields, null, 2));
         
-        // Verify appearance settings for each field
+        // Log each field's appearance settings to verify they're preserved correctly
         adaptedFields.forEach(field => {
-          // Log each styling property that might affect the field's appearance
-          console.log(`[CollectionPreview] Field ${field.name} appearance settings:`, JSON.stringify(field.appearance, null, 2));
-          
-          if (!field.appearance || Object.keys(field.appearance).length === 0) {
-            console.warn(`[CollectionPreview] WARNING: No appearance settings found for field ${field.name}`);
-          } else {
-            console.log(`[CollectionPreview] Field ${field.name} UI variant:`, field.appearance.uiVariant);
-            if (field.appearance.colors) {
-              console.log(`[CollectionPreview] Field ${field.name} colors:`, field.appearance.colors);
-            }
-          }
+          console.log(`[CollectionPreview] Field ${field.name} final appearance settings:`, 
+            JSON.stringify(field.appearance, null, 2));
+          console.log(`[CollectionPreview] Field ${field.name} UI variant: ${field.appearance?.uiVariant}`);
         });
         
         setFields(adaptedFields);

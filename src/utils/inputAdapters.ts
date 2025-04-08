@@ -1,4 +1,3 @@
-
 /**
  * Creates a function that accepts a React.ChangeEvent<HTMLInputElement> and calls the provided setter with the input value
  * @param setter - A state setter function that accepts a string value
@@ -64,9 +63,6 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
   
   // Validate and normalize UI variant - ensure we always have a valid value
   const uiVariant = validateUIVariant(uiVariantValue);
-  
-  // Log the normalized UI variant for debugging
-  console.log(`[inputAdapters] Normalized UI variant: ${uiVariant}`);
   
   // Create a normalized settings object, preserving any existing properties
   // but ensuring required properties have sensible defaults

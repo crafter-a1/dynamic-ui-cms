@@ -33,45 +33,21 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
     setIsSaving(true);
     
     try {
+      // Log the advanced settings being saved
+      console.log("[FieldAdvancedTab] Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
+      
       setAdvancedSettings(advancedSettings);
       
       // Create a deep copy of the existing field data to work with
-      let updatedData = JSON.parse(JSON.stringify(fieldData || {}));
+      let updatedData = fieldData ? JSON.parse(JSON.stringify(fieldData)) : {};
       
-      // Preserve all existing settings and just update the advanced part
-      // This ensures we don't lose appearance, validation, or ui_options
+      // Set the advanced settings while preserving all other settings
+      updatedData = {
+        ...updatedData,
+        advanced: advancedSettings,
+      };
       
-      console.log("[FieldAdvancedTab] Original field data before update:", JSON.stringify(updatedData, null, 2));
-      
-      // Set the advanced settings directly
-      updatedData.advanced = advancedSettings;
-      
-      // CRITICAL: Preserve ALL other settings explicitly
-      // Special focus on appearance which must never be lost
-      if (fieldData?.appearance) {
-        console.log("[FieldAdvancedTab] Preserving appearance settings:", 
-          JSON.stringify(fieldData.appearance, null, 2));
-        updatedData.appearance = { ...fieldData.appearance };
-        
-        // Extra safeguard for UI variant
-        console.log("[FieldAdvancedTab] UI Variant being preserved:", fieldData.appearance.uiVariant);
-      }
-      
-      // Preserve other important settings
-      if (fieldData?.validation) {
-        updatedData.validation = { ...fieldData.validation };
-      }
-      
-      if (fieldData?.ui_options) {
-        updatedData.ui_options = { ...fieldData.ui_options };
-      }
-      
-      if (fieldData?.helpText) {
-        updatedData.helpText = fieldData.helpText;
-      }
-      
-      // Log what we're saving to debug any issues
-      console.log("[FieldAdvancedTab] Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
+      // Log the complete updated field data
       console.log("[FieldAdvancedTab] Complete updated field data:", JSON.stringify(updatedData, null, 2));
       
       // Update the field data with our deep-copied and merged object
