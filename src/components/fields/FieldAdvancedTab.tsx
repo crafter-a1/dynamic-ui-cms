@@ -44,14 +44,15 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
       // IMPORTANT: Preserve appearance settings
       // Ensure we don't lose appearance settings if they exist
       if (fieldData?.appearance) {
-        console.log("Preserving appearance settings when saving advanced settings:", 
+        console.log("[FieldAdvancedTab] Preserving appearance settings when saving advanced settings:", 
           JSON.stringify(fieldData.appearance, null, 2));
+        console.log("[FieldAdvancedTab] UI Variant being preserved:", fieldData.appearance.uiVariant);
         updatedData.appearance = fieldData.appearance;
       }
       
       // Log what we're saving to debug any issues
-      console.log("Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
-      console.log("Updated field data:", JSON.stringify(updatedData, null, 2));
+      console.log("[FieldAdvancedTab] Saving advanced settings:", JSON.stringify(advancedSettings, null, 2));
+      console.log("[FieldAdvancedTab] Updated field data with preserved appearance:", JSON.stringify(updatedData, null, 2));
       
       onUpdate(updatedData);
       
@@ -60,7 +61,7 @@ export function FieldAdvancedTab({ fieldType, fieldData, onUpdate }: FieldAdvanc
         description: "Your field's advanced settings have been saved"
       });
     } catch (error) {
-      console.error("Error saving advanced settings:", error);
+      console.error("[FieldAdvancedTab] Error saving advanced settings:", error);
       toast({
         title: "Error saving settings",
         description: "There was a problem saving your advanced settings",

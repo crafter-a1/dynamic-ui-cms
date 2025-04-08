@@ -90,7 +90,7 @@ export function adaptFieldsForPreview(fields: any[]): any[] {
     
     // Extract appearance settings more consistently
     // Start by looking in settings.appearance, then field.appearance, then individual properties
-    let appearance = {};
+    let appearance: Record<string, any> = {};
     
     // Check all possible locations where appearance settings might be stored
     if (field.settings?.appearance) {

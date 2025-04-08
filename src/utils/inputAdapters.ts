@@ -1,4 +1,3 @@
-
 /**
  * Creates a function that accepts a React.ChangeEvent<HTMLInputElement> and calls the provided setter with the input value
  * @param setter - A state setter function that accepts a string value
@@ -20,7 +19,7 @@ export const validateUIVariant = (variant: any): "standard" | "material" | "pill
   
   // If variant is undefined or null, return the default
   if (variant === undefined || variant === null) {
-    console.log("No UI variant provided, defaulting to 'standard'");
+    console.log("[inputAdapters] No UI variant provided, defaulting to 'standard'");
     return "standard";
   }
   
@@ -29,11 +28,11 @@ export const validateUIVariant = (variant: any): "standard" | "material" | "pill
   
   if (validVariants.includes(variantStr)) {
     const normalizedVariant = variantStr as "standard" | "material" | "pill" | "borderless" | "underlined";
-    console.log(`Validated UI variant: ${normalizedVariant}`);
+    console.log(`[inputAdapters] Validated UI variant: ${normalizedVariant}`);
     return normalizedVariant;
   }
   
-  console.warn(`Invalid UI variant '${variant}' provided, defaulting to 'standard'`);
+  console.warn(`[inputAdapters] Invalid UI variant '${variant}' provided, defaulting to 'standard'`);
   return "standard";
 }
 
@@ -47,14 +46,26 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
   const settings = typeof appearance === 'object' && appearance !== null ? appearance : {};
   
   // Log original settings for debugging
-  console.log("Original appearance settings before normalization:", JSON.stringify(settings, null, 2));
+  console.log("[inputAdapters] Original appearance settings before normalization:", JSON.stringify(settings, null, 2));
+  
+  // First check if uiVariant exists in any form
+  let uiVariantValue = null;
+  
+  if ('uiVariant' in settings) {
+    uiVariantValue = settings.uiVariant;
+    console.log(`[inputAdapters] Found uiVariant in settings: ${uiVariantValue}`);
+  } else if ('uiVariation' in settings) {
+    uiVariantValue = settings.uiVariation;
+    console.log(`[inputAdapters] Found uiVariation in settings: ${uiVariantValue}`);
+  } else {
+    console.log(`[inputAdapters] No UI variant found in settings, will use default`);
+  }
   
   // Validate and normalize UI variant - ensure we always have a valid value
-  // Try both common property names for UI variant
-  const uiVariant = validateUIVariant(settings.uiVariant || settings.uiVariation || 'standard');
+  const uiVariant = validateUIVariant(uiVariantValue || 'standard');
   
   // Log the normalized UI variant for debugging
-  console.log(`Normalized UI variant: ${uiVariant}`);
+  console.log(`[inputAdapters] Normalized UI variant: ${uiVariant}`);
   
   const normalized = {
     uiVariant,
@@ -86,7 +97,8 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
     }
   };
   
-  console.log("Normalized appearance settings:", JSON.stringify(normalized, null, 2));
+  console.log("[inputAdapters] Normalized appearance settings:", JSON.stringify(normalized, null, 2));
+  console.log(`[inputAdapters] UI Variant after normalization: ${normalized.uiVariant}`);
   return normalized;
 };
 
@@ -97,7 +109,7 @@ export const normalizeAppearanceSettings = (appearance: any = {}): Record<string
  * @returns Normalized field-specific settings
  */
 export const normalizeFieldSpecificSettings = (fieldType: string, settings: any = {}): Record<string, any> => {
-  console.log(`Normalizing field-specific settings for ${fieldType}:`, JSON.stringify(settings, null, 2));
+  console.log(`[inputAdapters] Normalizing field-specific settings for ${fieldType}:`, JSON.stringify(settings, null, 2));
   
   const normalizedSettings: Record<string, any> = {};
   

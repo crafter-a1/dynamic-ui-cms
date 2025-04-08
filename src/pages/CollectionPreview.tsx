@@ -27,40 +27,56 @@ export default function CollectionPreview() {
 
       setIsLoading(true);
       try {
+        console.log(`[CollectionPreview] Fetching fields for collection ${collectionId}...`);
+        
         // Fetch fields from the database using our service
         const fetchedFields = await getFieldsForCollection(collectionId);
-        console.log("Loaded fields from database:", JSON.stringify(fetchedFields, null, 2));
+        console.log("[CollectionPreview] Raw fields fetched from database:", JSON.stringify(fetchedFields, null, 2));
         
-        // Log appearance settings before adaptation
+        // Detailed logging of appearance settings for each field
         fetchedFields.forEach((field: any) => {
-          console.log(`Original field ${field.name} appearance:`, 
-            field.appearance || field.settings?.appearance || 'No appearance settings found');
-          console.log(`Original field ${field.name} UI variant:`, 
-            field.appearance?.uiVariant || field.settings?.appearance?.uiVariant || 
-            field.settings?.uiVariant || 'No UI variant found');
+          console.log(`[CollectionPreview] Field ${field.name} type: ${field.type}`);
+          console.log(`[CollectionPreview] Field ${field.name} appearance location check:`, {
+            'field.appearance': field.appearance ? 'exists' : 'missing',
+            'field.settings?.appearance': field.settings?.appearance ? 'exists' : 'missing',
+            'uiVariant in field.appearance': field.appearance?.uiVariant || 'not found',
+            'uiVariant in field.settings.appearance': field.settings?.appearance?.uiVariant || 'not found',
+            'uiVariant in field.settings': field.settings?.uiVariant || 'not found'
+          });
+          
+          if (field.appearance) {
+            console.log(`[CollectionPreview] Original field ${field.name} appearance:`, JSON.stringify(field.appearance, null, 2));
+          }
+          if (field.settings?.appearance) {
+            console.log(`[CollectionPreview] Settings appearance for ${field.name}:`, JSON.stringify(field.settings.appearance, null, 2));
+          }
         });
         
         // Process fields to ensure consistent structure with field-specific settings
+        console.log("[CollectionPreview] Adapting fields for preview...");
         const adaptedFields = adaptFieldsForPreview(fetchedFields);
-        console.log("Adapted fields for preview:", JSON.stringify(adaptedFields, null, 2));
+        console.log("[CollectionPreview] Adapted fields for preview:", JSON.stringify(adaptedFields, null, 2));
         
         // Log field types and their specific settings for debugging
         adaptedFields.forEach(field => {
-          console.log(`Preview: Field ${field.name} (${field.type}) UI variant:`, 
+          console.log(`[CollectionPreview] Preview: Field ${field.name} (${field.type}) UI variant:`, 
             field.appearance?.uiVariant);
-          if (field.advanced) {
-            console.log(`Preview: Field ${field.name} advanced settings:`, 
-              JSON.stringify(field.advanced, null, 2));
-          }
-          if (field.appearance) {
-            console.log(`Preview: Field ${field.name} appearance settings:`, 
-              JSON.stringify(field.appearance, null, 2));
-          }
+            
+          // Log each styling property that might affect the field's appearance
+          console.log(`[CollectionPreview] Field ${field.name} final appearance properties:`, {
+            'uiVariant': field.appearance?.uiVariant || 'not set',
+            'textAlign': field.appearance?.textAlign || 'not set',
+            'filled': field.appearance?.filled || 'not set',
+            'showBorder': field.appearance?.showBorder || 'not set',
+            'roundedCorners': field.appearance?.roundedCorners || 'not set',
+            'fieldSize': field.appearance?.fieldSize || 'not set',
+            'colors': field.appearance?.colors ? 'customized' : 'default'
+          });
         });
         
         setFields(adaptedFields);
       } catch (err) {
-        console.error("Error loading collection fields:", err);
+        console.error("[CollectionPreview] Error loading collection fields:", err);
         setError(err instanceof Error ? err : new Error('Failed to load collection fields'));
         toast({
           title: "Error loading collection",
@@ -73,13 +89,13 @@ export default function CollectionPreview() {
           const storedFields = localStorage.getItem(`collection_${collectionId}_fields`);
           if (storedFields) {
             const parsedFields = JSON.parse(storedFields);
-            console.log("Falling back to stored fields from localStorage:", parsedFields);
+            console.log("[CollectionPreview] Falling back to stored fields from localStorage:", parsedFields);
             
             const adaptedFields = adaptFieldsForPreview(parsedFields);
             setFields(adaptedFields);
           }
         } catch (storageErr) {
-          console.error("Error loading from localStorage:", storageErr);
+          console.error("[CollectionPreview] Error loading from localStorage:", storageErr);
         }
       } finally {
         setIsLoading(false);
@@ -96,7 +112,7 @@ export default function CollectionPreview() {
     });
     
     // In a real app, you might want to save this data to your backend
-    console.log("Preview form data saved:", formData);
+    console.log("[CollectionPreview] Preview form data saved:", formData);
   };
 
   return (
